@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     const results = ((data.data && data.data.web) || []).map(item => ({
       title: item.title || item.url,
       url: item.url,
-      snippet: item.description || ''
+      snippet: cleanSnippet(item.description)
     }));
 
     // Cache briefly at the edge to keep repeat queries fast and cheap.
@@ -65,4 +65,19 @@ export default async function handler(req, res) {
       detail: (err && err.message) || String(err)
     });
   }
+}
+
+// Some pages return raw markdown-ish or link-heavy text as their
+// description — strip that down to plain, readable text for the list.
+function cleanSnippet(raw) {
+  if (!raw) return '';
+  let text = String(raw)
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // [label](url) -> label
+    .replace(/\*\*([^*]*)\*\*/g, '$1')       // **bold** -> bold
+    .replace(/[*_#`>]/g, '')                 // stray markdown symbols
+    .replace(/https?:\/\/\S+/g, '')          // bare URLs
+    .replace(/\s+/g, ' ')                    // collapse whitespace/newlines
+    .trim();
+  if (text.length > 180) text = text.slice(0, 177).trim() + '…';
+  return text;
 }
