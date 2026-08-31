@@ -7,33 +7,45 @@
 // shown inside an <iframe> — that's deliberate on their end, and no
 // client-side trick can get around it. So instead of framing a search
 // engine's page, Nexa Browser asks THIS endpoint for real results and
-// renders them in its own native results list.
+// renders them in its own native results list — including web, image, and
+// shopping-flavored results.
 //
-// This calls Firecrawl's "keyless" Search API — a hosted search endpoint
-// that works with NO signup and NO API key at all (rate-limited per IP;
-// add a free Firecrawl API key later via the FIRECRAWL_API_KEY env var
-// for higher limits, but it isn't required to get this working).
+// Uses Firecrawl's "keyless" Search API — no signup, no API key, no billing
+// required to get working. Add a free FIRECRAWL_API_KEY env var later for
+// higher rate limits; not required otherwise.
 //
-// No setup needed. This works as soon as it's deployed.
-//
-// (Earlier versions of this endpoint tried scraping DuckDuckGo's HTML page
-// directly — which got IP-blocked — and then Google's Custom Search JSON
-// API, which needs a Cloud project with billing linked. Firecrawl's keyless
-// endpoint avoids both of those problems.)
+// Query params:
+//   q     — the search query (required)
+//   type  — "web" (default), "images", or "shopping"
+
+const SHOPPING_DOMAINS = [
+  'amazon.com', 'walmart.com', 'ebay.com', 'target.com', 'bestbuy.com',
+  'etsy.com', 'aliexpress.com', 'flipkart.com', 'homedepot.com', 'macys.com'
+];
 
 export default async function handler(req, res) {
   const q = (req.query.q || '').toString().trim();
+  const type = (req.query.type || 'web').toString().trim();
 
   if (!q) {
     res.status(400).json({ error: 'Missing required query parameter: q' });
     return;
   }
 
+  const body = { query: q, limit: 10 };
+  if (type === 'images') {
+    body.sources = ['images'];
+  } else if (type === 'shopping') {
+    body.sources = ['web'];
+    body.includeDomains = SHOPPING_DOMAINS;
+  } else {
+    body.sources = ['web'];
+  }
+
   try {
     const headers = { 'Content-Type': 'application/json' };
-    // Optional: if you later create a free Firecrawl account and add
-    // FIRECRAWL_API_KEY as a Vercel environment variable, requests will
-    // automatically use it for higher rate limits. Not required otherwise.
+    // Optional: add a free Firecrawl API key as FIRECRAWL_API_KEY in Vercel
+    // env vars for higher rate limits. Works fine without it.
     if (process.env.FIRECRAWL_API_KEY) {
       headers['Authorization'] = 'Bearer ' + process.env.FIRECRAWL_API_KEY;
     }
@@ -41,7 +53,7 @@ export default async function handler(req, res) {
     const upstream = await fetch('https://api.firecrawl.dev/v2/search', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ query: q, limit: 10 })
+      body: JSON.stringify(body)
     });
 
     const data = await upstream.json();
@@ -50,15 +62,25 @@ export default async function handler(req, res) {
       throw new Error((data && data.error) || ('Upstream request failed with status ' + upstream.status));
     }
 
-    const results = ((data.data && data.data.web) || []).map(item => ({
-      title: item.title || item.url,
-      url: item.url,
-      snippet: cleanSnippet(item.description)
-    }));
+    let results;
+    if (type === 'images') {
+      results = ((data.data && data.data.images) || []).map(item => ({
+        title: item.title || '',
+        imageUrl: item.imageUrl,
+        sourceUrl: item.url,
+        width: item.imageWidth,
+        height: item.imageHeight
+      })).filter(r => r.imageUrl);
+    } else {
+      results = ((data.data && data.data.web) || []).map(item => ({
+        title: item.title || item.url,
+        url: item.url,
+        snippet: cleanSnippet(item.description)
+      }));
+    }
 
-    // Cache briefly at the edge to keep repeat queries fast and cheap.
     res.setHeader('Cache-Control', 's-maxage=180, stale-while-revalidate=300');
-    res.status(200).json({ query: q, results });
+    res.status(200).json({ query: q, type, results });
   } catch (err) {
     res.status(502).json({
       error: 'Search backend unavailable',
