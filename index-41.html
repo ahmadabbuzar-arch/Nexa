@@ -1,0 +1,2641 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Nexa Browser — Browse. Ask. Understand.</title>
+<meta name="description" content="Nexa Browser: a premium, AI-native mobile browser.">
+<meta name="theme-color" content="#6C4CF1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================================
+   NEXA BROWSER — main.css (tokens, reset, layout primitives)
+   ========================================================================= */
+:root{
+  --font-display:'Poppins',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+
+  --radius-lg:18px;
+  --radius-md:14px;
+  --radius-sm:10px;
+  --radius-xs:7px;
+  --tap:44px;
+
+  --dur-1:120ms;
+  --dur-2:220ms;
+  --ease:cubic-bezier(.2,.8,.2,1);
+
+  color-scheme: light;
+
+  /* Multi-hue accent set used for colorful shortcut tiles & AI card */
+  --hue-blue:#3B82F6;
+  --hue-pink:#F43F5E;
+  --hue-teal:#12B7A6;
+  --hue-amber:#F5A524;
+}
+
+:root[data-theme="dark"]{
+  --bg:#0A0A0C;
+  --bg-elev-1:#131317;
+  --bg-elev-2:#1B1B20;
+  --bg-elev-3:#242429;
+  --border:rgba(255,255,255,.08);
+  --border-strong:rgba(255,255,255,.14);
+  --text:#EDEDF0;
+  --text-dim:#9C9CA6;
+  --text-faint:#68686F;
+  --accent:#C9A468;
+  --accent-strong:#DDBB80;
+  --accent-soft:rgba(201,164,104,.14);
+  --accent-soft-2:rgba(201,164,104,.28);
+  --on-accent:#17130A;
+  --danger:#E5626A;
+  --danger-soft:rgba(229,98,106,.14);
+  --success:#5FCB94;
+  --success-soft:rgba(95,203,148,.14);
+  --private:#8B7FD6;
+  --private-soft:rgba(139,127,214,.14);
+  --shadow-1:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.4);
+  --shadow-2:0 20px 60px rgba(0,0,0,.55);
+  --glass-bg:rgba(19,19,23,.72);
+  --scrim:rgba(4,4,5,.6);
+}
+:root[data-theme="light"]{
+  color-scheme: light;
+  --bg:#FAF8FF;
+  --bg-elev-1:#FFFFFF;
+  --bg-elev-2:#F1EEFC;
+  --bg-elev-3:#E7E1FA;
+  --border:rgba(65,40,150,.10);
+  --border-strong:rgba(65,40,150,.18);
+  --text:#1C1533;
+  --text-dim:#5C5578;
+  --text-faint:#8D86A6;
+  --accent:#6C4CF1;
+  --accent-strong:#5636D9;
+  --accent-soft:rgba(108,76,241,.12);
+  --accent-soft-2:rgba(108,76,241,.24);
+  --on-accent:#FFFFFF;
+  --danger:#F43F5E;
+  --danger-soft:rgba(244,63,94,.12);
+  --success:#12B76A;
+  --success-soft:rgba(18,183,106,.12);
+  --private:#9B5DE5;
+  --private-soft:rgba(155,93,229,.12);
+  --shadow-1:0 1px 0 rgba(255,255,255,.8) inset,0 10px 26px rgba(65,40,150,.16);
+  --shadow-2:0 26px 64px rgba(65,40,150,.24);
+  --glass-bg:rgba(255,255,255,.75);
+  --scrim:rgba(28,21,51,.38);
+}
+
+*,*::before,*::after{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  overscroll-behavior:none;
+}
+button{font-family:inherit;}
+input{font-family:inherit;}
+button,input,a{color:inherit;}
+button{background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+a{text-decoration:none;color:inherit;}
+svg{display:block;flex-shrink:0;}
+::selection{background:var(--accent-soft-2);}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;}
+
+/* scrollbars */
+::-webkit-scrollbar{width:0;height:0;}
+
+.hidden{display:none !important;}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+
+/* =========================================================================
+   DEVICE FRAME — presentation only on wide viewports; true full-bleed on
+   phones/WebView, per "optimize primarily for Android phones" requirement.
+   ========================================================================= */
+.viewport-shell{
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(1200px 800px at 20% 0%, rgba(201,164,104,.06), transparent 60%),
+    var(--bg);
+}
+#app{
+  position:relative;
+  width:100%;
+  height:100%;
+  max-width:430px;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  isolation:isolate;
+}
+@media (min-width:560px){
+  .viewport-shell{padding:28px;}
+  #app{
+    height:min(900px,94vh);
+    border-radius:36px;
+    border:1px solid var(--border-strong);
+    box-shadow:var(--shadow-2);
+  }
+}
+
+/* safe areas */
+.safe-top{padding-top:env(safe-area-inset-top);}
+.safe-bottom{padding-bottom:env(safe-area-inset-bottom);}
+
+/* =========================================================================
+   TOP BROWSER BAR — browser.css
+   ========================================================================= */
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 8px 8px;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  z-index:5;
+}
+.icon-btn{
+  width:var(--tap);
+  height:var(--tap);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:var(--radius-sm);
+  color:var(--text-dim);
+  transition:background var(--dur-1) var(--ease), color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.icon-btn svg{width:20px;height:20px;}
+.icon-btn:active{transform:scale(.9);background:var(--bg-elev-2);}
+.icon-btn:hover{color:var(--text);background:var(--bg-elev-1);}
+.icon-btn[disabled]{opacity:.32;pointer-events:none;}
+.icon-btn.accent{color:var(--accent);}
+
+.address-pill{
+  flex:1;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  height:40px;
+  padding:0 13px;
+  background:var(--bg-elev-1);
+  border:1.5px solid var(--border-strong);
+  border-radius:999px;
+  min-width:0;
+  box-shadow:var(--shadow-1);
+  transition:border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+}
+.address-pill:focus-within{border-color:var(--accent);background:var(--bg-elev-2);}
+.address-pill .lock{width:14px;height:14px;color:var(--success);flex-shrink:0;}
+.address-pill.insecure .lock{color:var(--text-faint);}
+.address-pill.private .lock{color:var(--private);}
+.address-pill input{
+  flex:1;
+  min-width:0;
+  background:none;
+  border:0;
+  font-size:14.5px;
+  font-family:var(--font-mono);
+  color:var(--text);
+  padding:0;
+}
+.address-pill input::placeholder{color:var(--text-faint);font-family:var(--font-body);}
+.address-pill .site-badge{
+  font-size:11px;
+  color:var(--text-faint);
+  font-family:var(--font-mono);
+  flex-shrink:0;
+}
+.reload-spin{animation:spin 900ms linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.tab-square-btn{color:var(--text-dim);}
+.tab-square{
+  width:20px;height:20px;border-radius:6px;border:2px solid currentColor;
+  font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);
+}
+
+.private-chip{
+  display:none;
+  align-items:center;
+  gap:5px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.02em;
+  color:var(--private);
+  background:var(--private-soft);
+  padding:3px 8px 3px 6px;
+  border-radius:999px;
+  flex-shrink:0;
+}
+.private-chip svg{width:12px;height:12px;}
+#app.private .private-chip{display:inline-flex;}
+#app.private .topbar{background:linear-gradient(180deg, var(--private-soft), transparent 140%), var(--bg);}
+
+/* find in page bar */
+.findbar{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:8px;
+  background:var(--bg-elev-1);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.findbar input{
+  flex:1;
+  height:36px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--text);
+  padding:0 10px;
+  font-size:14px;
+}
+.findbar .match-count{
+  font-size:12px;
+  color:var(--text-faint);
+  font-family:var(--font-mono);
+  white-space:nowrap;
+  padding:0 4px;
+}
+
+/* =========================================================================
+   CONTENT AREA
+   ========================================================================= */
+.content-area{
+  position:relative;
+  flex:1;
+  min-height:0;
+  background:var(--bg);
+  overflow:hidden;
+}
+.page-frame{
+  width:100%;height:100%;border:0;background:var(--bg-elev-1);
+}
+.state-layer{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;
+  background:var(--bg);
+  text-align:center;
+  padding:32px;
+}
+.state-layer.hidden{display:none;}
+.state-icon{
+  width:56px;height:56px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg-elev-2);color:var(--text-faint);
+}
+.state-icon svg{width:26px;height:26px;}
+.state-title{font-family:var(--font-display);font-size:16px;font-weight:600;}
+.state-desc{font-size:13.5px;color:var(--text-dim);max-width:280px;line-height:1.5;}
+.state-actions{display:flex;gap:10px;margin-top:4px;}
+
+.loading-skel{
+  position:absolute;inset:0;
+  padding:18px;
+  background:var(--bg);
+  display:flex;flex-direction:column;gap:12px;
+}
+.skel-bar{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--bg-elev-1) 25%,var(--bg-elev-2) 37%,var(--bg-elev-1) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
+@keyframes shimmer{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+.progress-line{
+  position:absolute;top:0;left:0;height:2px;background:var(--accent);
+  width:0%;transition:width 220ms ease;z-index:4;
+}
+.floating-open-external{
+  position:absolute;right:14px;bottom:14px;z-index:6;
+  display:flex;align-items:center;gap:7px;
+  padding:10px 16px;border-radius:999px;
+  background:var(--accent);color:var(--on-accent);
+  font-size:13px;font-weight:700;
+  box-shadow:0 10px 26px rgba(65,40,150,.32);
+}
+.floating-open-external svg{width:15px;height:15px;}
+.floating-open-external:active{transform:scale(.96);}
+
+.search-results{
+  position:absolute;inset:0;overflow-y:auto;background:var(--bg);padding:16px 14px 26px;
+}
+.search-results-head{
+  font-size:13px;color:var(--text-faint);padding:2px 4px 10px;
+}
+.search-tabs{
+  display:flex;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:6px;
+}
+.search-tab{
+  padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;
+  color:var(--text-dim);background:var(--bg-elev-1);border:1px solid var(--border);
+}
+.search-tab.active{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
+.image-results-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+}
+.image-result-card{
+  border-radius:var(--radius-md);overflow:hidden;background:var(--bg-elev-1);
+  border:1px solid var(--border);cursor:pointer;
+}
+.image-result-card img{width:100%;height:130px;object-fit:cover;display:block;background:var(--bg-elev-2);}
+.image-result-card .cap{padding:7px 9px;font-size:11.5px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.search-results-list .list-row{cursor:pointer;align-items:flex-start;padding:14px 4px;}
+.search-results-list .list-icon{margin-top:2px;}
+.search-results-list .list-title{
+  color:var(--accent-strong);
+  font-size:15.5px;
+  font-weight:600;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+  line-height:1.35;
+}
+.search-results-list .list-row:active .list-title{text-decoration:underline;}
+.search-results-list .list-sub{
+  color:#188038;
+  font-size:12.5px;
+  font-family:var(--font-body);
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+  margin-top:2px;
+}
+:root[data-theme="dark"] .search-results-list .list-sub{color:#5fbf7a;}
+.search-results-list .list-row:active{background:var(--bg-elev-1);}
+
+/* =========================================================================
+   HOME / NEW TAB SCREEN
+   ========================================================================= */
+.home-screen{
+  position:absolute;inset:0;
+  overflow-y:auto;
+  padding:28px 20px 100px;
+  background:var(--bg);
+}
+.home-brand{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  margin:18px 0 30px;
+}
+.brand-mark{width:52px;height:52px;}
+.brand-mark-big{width:64px;height:64px;filter:drop-shadow(0 6px 16px rgba(65,40,150,.18));}
+.brand-word{font-family:var(--font-display);font-weight:700;font-size:19px;letter-spacing:-.01em;}
+.brand-tagline{font-size:12px;color:var(--text-faint);letter-spacing:.04em;text-transform:uppercase;}
+
+.home-greeting{
+  font-family:var(--font-display);
+  font-size:23px;
+  font-weight:700;
+  text-align:center;
+  line-height:1.3;
+  margin:0 0 22px;
+  letter-spacing:-.01em;
+}
+
+.home-search{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg-elev-1);
+  border:1.5px solid var(--border-strong);
+  border-radius:999px;
+  padding:6px 6px 6px 18px;
+  height:58px;
+  box-shadow:var(--shadow-1);
+  transition:border-color var(--dur-1) var(--ease);
+}
+.home-search:focus-within{border-color:var(--accent);}
+.home-search input{
+  flex:1;min-width:0;background:none;border:0;font-size:15.5px;color:var(--text);
+}
+.home-search input::placeholder{color:var(--text-faint);}
+.home-search .search-go{
+  width:46px;height:46px;border-radius:50%;
+  background:var(--accent);color:var(--on-accent);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 8px 18px var(--accent-soft-2);
+  transition:transform var(--dur-1) var(--ease), filter var(--dur-1) var(--ease);
+}
+.home-search .search-go svg{width:19px;height:19px;}
+.home-search .search-go:active{transform:scale(.92);}
+.home-search .mic-btn{color:var(--text-faint);width:38px;height:38px;border-radius:50%;flex-shrink:0;}
+.home-search .mic-btn.listening{color:var(--danger);animation:pulse-mic 1.1s ease infinite;}
+@keyframes pulse-mic{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.section-label{
+  font-size:12px;font-weight:600;color:var(--text-faint);
+  text-transform:uppercase;letter-spacing:.06em;
+  margin:26px 0 12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.section-label .clear-link{font-size:12px;color:var(--accent);text-transform:none;letter-spacing:0;font-weight:500;}
+
+.shortcut-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px;
+}
+.shortcut{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.shortcut-icon{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--bg-elev-1);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:800;font-size:17px;color:var(--text-dim);
+  transition:transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+  box-shadow:0 6px 16px rgba(65,40,150,.14);
+  overflow:hidden;
+}
+.shortcut-icon img{width:30px;height:30px;object-fit:contain;}
+.shortcut-icon.fallback.brand-google{background:#4285F4;color:#fff;border-color:transparent;}
+.shortcut-icon.fallback.brand-youtube{background:#FF3B30;color:#fff;border-color:transparent;}
+.shortcut-icon.fallback.brand-instagram{background:linear-gradient(135deg,#FEDA75,#FA7E1E,#D62976,#962FBF,#4F5BD5);color:#fff;border-color:transparent;}
+.shortcut-icon.fallback.brand-whatsapp{background:#25D366;color:#fff;border-color:transparent;}
+.shortcut-icon.fallback.brand-x{background:#15151A;color:#fff;border-color:transparent;}
+.shortcut-icon.fallback.brand-netflix{background:linear-gradient(160deg,#8B0000,#E50914);color:#fff;border-color:transparent;}
+.shortcut-icon.fallback.brand-spotify{background:#1ED760;color:#fff;border-color:transparent;}
+.shortcut-icon.fallback.brand-wikipedia{background:var(--bg-elev-1);color:var(--text);border:2px solid var(--border-strong);}
+.shortcut:active .shortcut-icon{transform:scale(.92);}
+.shortcut span{font-size:11.5px;font-weight:600;color:var(--text-dim);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.recent-list{display:flex;flex-direction:column;gap:2px;}
+.recent-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 4px;border-radius:var(--radius-sm);
+  transition:background var(--dur-1) var(--ease);
+}
+.recent-row:active{background:var(--bg-elev-1);}
+.recent-favicon{
+  width:34px;height:34px;border-radius:50%;background:var(--bg-elev-1);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--text-faint);flex-shrink:0;
+}
+.recent-favicon svg{width:16px;height:16px;}
+.recent-meta{flex:1;min-width:0;}
+.recent-title{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.recent-url{font-size:12px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);}
+.recent-time{font-size:11px;color:var(--text-faint);flex-shrink:0;}
+.empty-inline{font-size:13px;color:var(--text-faint);padding:10px 4px;}
+
+.ai-card{
+  margin-top:26px;
+  padding:18px;
+  border-radius:var(--radius-lg);
+  background:linear-gradient(135deg, rgba(108,76,241,.20), rgba(244,63,94,.13) 55%, rgba(18,183,166,.18)), var(--bg-elev-1);
+  border:1.5px solid var(--accent-soft-2);
+  box-shadow:var(--shadow-1);
+  display:flex;flex-direction:column;gap:10px;
+}
+.ai-card-top{display:flex;align-items:center;gap:10px;}
+.ai-card-icon{
+  width:36px;height:36px;border-radius:11px;background:var(--accent);color:var(--on-accent);
+  display:flex;align-items:center;justify-content:center;
+}
+.ai-card-icon svg{width:18px;height:18px;}
+.ai-card-title{font-family:var(--font-display);font-weight:600;font-size:14.5px;}
+.ai-card-desc{font-size:13px;color:var(--text-dim);line-height:1.5;}
+.ai-card-cta{
+  align-self:flex-start;
+  font-size:13px;font-weight:600;color:var(--accent);
+  display:flex;align-items:center;gap:4px;
+}
+.ai-card-cta svg{width:14px;height:14px;}
+
+/* =========================================================================
+   BOTTOM NAVIGATION
+   ========================================================================= */
+.bottom-nav{
+  display:flex;align-items:stretch;
+  background:var(--bg);
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+  z-index:5;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-btn{
+  flex:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;
+  height:58px;
+  color:var(--text-faint);
+  position:relative;
+  transition:color var(--dur-1) var(--ease);
+}
+.nav-btn svg{width:21px;height:21px;position:relative;z-index:1;}
+.nav-btn .label{position:relative;z-index:1;}
+.nav-btn::before{
+  content:'';position:absolute;top:5px;left:50%;translate:-50% 0;
+  width:40px;height:26px;border-radius:14px;background:transparent;
+  transition:background var(--dur-1) var(--ease);
+}
+.nav-btn.active{color:var(--accent);font-weight:700;}
+.nav-btn.active::before{background:var(--accent-soft-2);}
+.nav-btn:active{opacity:.6;}
+.nav-btn .label{font-size:9.5px;font-weight:500;letter-spacing:.01em;}
+.tab-count-badge{
+  position:absolute;top:6px;right:calc(50% - 17px);
+  min-width:14px;height:14px;padding:0 3px;
+  border:1.6px solid currentColor;border-radius:5px;
+  font-size:8.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* =========================================================================
+   BOTTOM SHEETS (AI / MENU) & MODALS
+   ========================================================================= */
+.scrim{
+  position:absolute;inset:0;background:var(--scrim);
+  opacity:0;pointer-events:none;transition:opacity var(--dur-2) var(--ease);
+  z-index:20;
+  backdrop-filter:blur(1px);
+}
+.scrim.show{opacity:1;pointer-events:auto;}
+
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;
+  background:var(--bg-elev-1);
+  border-top:1px solid var(--border-strong);
+  border-radius:22px 22px 0 0;
+  box-shadow:var(--shadow-2);
+  transform:translateY(102%);
+  transition:transform var(--dur-2) var(--ease);
+  z-index:21;
+  display:flex;flex-direction:column;
+  max-height:88%;
+}
+.sheet.show{transform:translateY(0);}
+.sheet-handle{
+  width:36px;height:4px;border-radius:3px;background:var(--border-strong);
+  margin:10px auto 4px;flex-shrink:0;
+}
+.sheet-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 16px 10px;flex-shrink:0;
+}
+.sheet-title{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:600;font-size:16px;}
+.sheet-title .spark{width:20px;height:20px;color:var(--accent);}
+.sheet-body{overflow-y:auto;padding:0 16px 20px;}
+
+/* menu sheet */
+.menu-list{display:flex;flex-direction:column;padding:6px 0 10px;}
+.menu-item{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 6px;border-radius:var(--radius-sm);
+  font-size:14.5px;
+}
+.menu-item:active{background:var(--bg-elev-2);}
+.menu-item svg{width:19px;height:19px;color:var(--text-dim);}
+.menu-item span{flex:1;text-align:left;}
+.menu-item .kbd{font-size:11px;color:var(--text-faint);font-family:var(--font-mono);}
+.menu-sep{height:1px;background:var(--border);margin:6px 4px;}
+
+/* AI sheet */
+.ai-actions-row{
+  display:flex;gap:8px;overflow-x:auto;padding:2px 0 14px;
+}
+.ai-chip{
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
+  padding:9px 13px;border-radius:999px;
+  background:var(--bg-elev-2);border:1px solid var(--border);
+  font-size:13px;font-weight:500;color:var(--text);
+  transition:background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+}
+.ai-chip svg{width:15px;height:15px;color:var(--accent);}
+.ai-chip:active{background:var(--accent-soft);border-color:var(--accent-soft-2);}
+
+.ai-chat{
+  display:flex;flex-direction:column;gap:12px;
+  min-height:140px;max-height:44vh;overflow-y:auto;
+  padding:4px 2px 12px;
+}
+.ai-msg{max-width:86%;padding:10px 13px;border-radius:16px;font-size:13.8px;line-height:1.55;}
+.ai-msg.user{align-self:flex-end;background:var(--accent);color:var(--on-accent);border-bottom-right-radius:5px;}
+.ai-msg.assistant{align-self:flex-start;background:var(--bg-elev-2);border:1px solid var(--border);border-bottom-left-radius:5px;white-space:pre-wrap;}
+.ai-msg.assistant.typing{display:flex;gap:4px;align-items:center;padding:14px 16px;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--text-faint);animation:bounce 1.2s ease infinite;}
+.dot:nth-child(2){animation-delay:.15s;}
+.dot:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-4px);opacity:1;}}
+.ai-empty{text-align:center;color:var(--text-faint);font-size:13px;padding:20px 10px;}
+.ai-empty b{color:var(--text-dim);}
+
+.ai-input-row{
+  display:flex;align-items:flex-end;gap:8px;
+  padding-top:10px;border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.ai-input-row textarea{
+  flex:1;resize:none;max-height:90px;
+  background:var(--bg-elev-2);border:1px solid var(--border);
+  border-radius:16px;padding:10px 14px;font-size:14px;color:var(--text);
+  font-family:var(--font-body);line-height:1.4;
+}
+.ai-send{
+  width:42px;height:42px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:transform var(--dur-1) var(--ease),opacity var(--dur-1) var(--ease);
+}
+.ai-send svg{width:18px;height:18px;}
+.ai-send:active{transform:scale(.9);}
+.ai-send[disabled]{opacity:.35;pointer-events:none;}
+.ai-mode-note{
+  font-size:11px;color:var(--text-faint);text-align:center;padding:8px 10px 0;
+}
+
+/* =========================================================================
+   FULL-SCREEN PANELS (Tabs / History / Bookmarks / Downloads / Settings)
+   ========================================================================= */
+.panel{
+  position:absolute;inset:0;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform var(--dur-2) var(--ease);
+  z-index:15;
+}
+.panel.show{transform:translateX(0);}
+.panel-header{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 8px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.panel-title{font-family:var(--font-display);font-weight:600;font-size:16.5px;flex:1;}
+.panel-body{flex:1;overflow-y:auto;padding:8px 14px 26px;}
+.panel-body.no-pad{padding:0;}
+
+/* Tabs grid */
+.tabs-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 14px;}
+.tabs-toolbar .seg{
+  display:flex;background:var(--bg-elev-1);border:1px solid var(--border);border-radius:999px;padding:3px;
+}
+.seg-btn{padding:6px 14px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--text-faint);}
+.seg-btn.active{background:var(--bg-elev-3);color:var(--text);}
+.tab-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.tab-card{
+  position:relative;
+  border-radius:var(--radius-md);
+  background:var(--bg-elev-1);border:1px solid var(--border);
+  overflow:hidden;height:150px;display:flex;flex-direction:column;
+  transition:border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.tab-card.active{border-color:var(--accent-soft-2);box-shadow:0 0 0 1.5px var(--accent-soft-2);}
+.tab-card:active{transform:scale(.97);}
+.tab-card-head{display:flex;align-items:center;gap:6px;padding:8px 8px 6px;}
+.tab-card-head .fav{width:16px;height:16px;color:var(--text-faint);flex-shrink:0;}
+.tab-card-head .ttl{flex:1;font-size:11.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tab-close{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-faint);flex-shrink:0;}
+.tab-close:active{background:var(--bg-elev-3);}
+.tab-close svg{width:12px;height:12px;}
+.tab-card-preview{
+  flex:1;margin:0 8px 8px;border-radius:10px;background:var(--bg-elev-2);
+  display:flex;align-items:center;justify-content:center;color:var(--text-faint);
+  overflow:hidden;position:relative;
+}
+.tab-card-preview svg{width:26px;height:26px;opacity:.6;}
+.tab-card-preview .url{position:absolute;bottom:6px;left:6px;right:6px;font-size:10px;font-family:var(--font-mono);color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tab-card.private-card{background:linear-gradient(160deg,var(--private-soft),transparent 60%),var(--bg-elev-1);}
+.new-tab-card{
+  border-radius:var(--radius-md);border:1.5px dashed var(--border-strong);
+  height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  color:var(--text-faint);
+}
+.new-tab-card svg{width:22px;height:22px;}
+.new-tab-card span{font-size:12px;font-weight:600;}
+
+/* List rows: history/bookmarks/downloads */
+.list-row{
+  display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--border);
+}
+.list-row:last-child{border-bottom:0;}
+.list-icon{
+  width:36px;height:36px;border-radius:50%;background:var(--bg-elev-1);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--text-dim);flex-shrink:0;
+}
+.list-icon svg{width:17px;height:17px;}
+.list-main{flex:1;min-width:0;}
+.list-title{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.list-sub{font-size:11.5px;color:var(--text-faint);font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.list-action{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-faint);flex-shrink:0;}
+.list-action svg{width:16px;height:16px;}
+.list-action:active{background:var(--bg-elev-2);}
+.list-action.filled{color:var(--accent);}
+.day-heading{font-size:12px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;padding:16px 4px 8px;}
+.day-heading:first-child{padding-top:4px;}
+
+.dl-progress-track{height:4px;border-radius:2px;background:var(--bg-elev-3);margin-top:6px;overflow:hidden;}
+.dl-progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 180ms linear;}
+.dl-status{font-size:11px;color:var(--text-faint);margin-top:3px;}
+
+.panel-empty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:60px 30px;text-align:center;color:var(--text-faint);}
+.panel-empty svg{width:40px;height:40px;opacity:.55;}
+.panel-empty b{color:var(--text-dim);font-weight:600;font-size:14px;}
+.panel-empty p{font-size:12.5px;margin:0;line-height:1.5;}
+
+/* Settings */
+.settings-group{margin-bottom:22px;}
+.settings-group-title{font-size:12px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;padding:0 4px 8px;}
+.settings-card{background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;}
+.setting-row{
+  display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--border);min-height:var(--tap);
+}
+.setting-row:last-child{border-bottom:0;}
+.setting-text{flex:1;min-width:0;}
+.setting-label{font-size:14px;font-weight:500;}
+.setting-desc{font-size:11.5px;color:var(--text-faint);margin-top:2px;line-height:1.4;}
+.setting-value{font-size:13px;color:var(--text-faint);flex-shrink:0;}
+.setting-row.actionable:active{background:var(--bg-elev-2);}
+.setting-row .chev{width:16px;height:16px;color:var(--text-faint);flex-shrink:0;}
+
+.switch{
+  position:relative;width:44px;height:26px;border-radius:999px;background:var(--bg-elev-3);
+  flex-shrink:0;transition:background var(--dur-1) var(--ease);border:1px solid var(--border);
+}
+.switch::after{
+  content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;
+  background:var(--text-dim);transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+}
+.switch.on{background:var(--accent-soft-2);border-color:var(--accent);}
+.switch.on::after{transform:translateX(18px);background:var(--accent);}
+
+.seg-pills{display:flex;gap:6px;padding:2px 4px 4px;}
+.pill-opt{
+  flex:1;text-align:center;padding:9px 6px;border-radius:var(--radius-sm);
+  background:var(--bg-elev-1);border:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--text-dim);
+}
+.pill-opt.active{background:var(--accent-soft);border-color:var(--accent-soft-2);color:var(--accent);}
+
+.about-block{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px 6px;text-align:center;}
+.about-block .brand-mark{width:40px;height:40px;}
+.about-block .v{font-size:12px;color:var(--text-faint);font-family:var(--font-mono);}
+.about-block p{font-size:12px;color:var(--text-faint);line-height:1.6;max-width:290px;margin:6px 0 0;}
+
+/* Select sheet (search engine / theme etc.) */
+.option-row{display:flex;align-items:center;gap:12px;padding:13px 6px;}
+.option-row .check{width:18px;height:18px;color:var(--accent);opacity:0;}
+.option-row.selected .check{opacity:1;}
+
+/* Modal (confirm dialogs) */
+.modal-backdrop{
+  position:absolute;inset:0;background:var(--scrim);z-index:30;
+  display:flex;align-items:center;justify-content:center;padding:30px;
+  opacity:0;pointer-events:none;transition:opacity var(--dur-2) var(--ease);
+}
+.modal-backdrop.show{opacity:1;pointer-events:auto;}
+.modal-box{
+  width:100%;max-width:300px;background:var(--bg-elev-1);border:1px solid var(--border-strong);
+  border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-2);
+  transform:scale(.94);transition:transform var(--dur-2) var(--ease);
+}
+.modal-backdrop.show .modal-box{transform:scale(1);}
+.modal-title{font-family:var(--font-display);font-weight:600;font-size:15.5px;margin-bottom:6px;}
+.modal-desc{font-size:13px;color:var(--text-dim);line-height:1.5;margin-bottom:18px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+.btn{
+  height:38px;padding:0 16px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn.ghost{color:var(--text-dim);}
+.btn.ghost:active{background:var(--bg-elev-2);}
+.btn.primary{background:var(--accent);color:var(--on-accent);}
+.btn.primary:active{filter:brightness(.92);}
+.btn.danger{background:var(--danger-soft);color:var(--danger);}
+.btn.danger:active{filter:brightness(.94);}
+.btn.block{width:100%;}
+
+/* Toasts */
+.toast-stack{
+  position:absolute;left:0;right:0;bottom:70px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  z-index:40;pointer-events:none;padding:0 20px;
+}
+.toast{
+  background:var(--bg-elev-3);border:1px solid var(--border-strong);
+  padding:10px 16px;border-radius:999px;font-size:13px;font-weight:500;
+  box-shadow:var(--shadow-1);
+  opacity:0;transform:translateY(8px);transition:opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+  display:flex;align-items:center;gap:8px;max-width:100%;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast svg{width:15px;height:15px;color:var(--accent);flex-shrink:0;}
+
+/* utility */
+.flex-1{flex:1;}
+.row{display:flex;align-items:center;}
+</style>
+</head>
+<body>
+
+<div class="viewport-shell">
+<div id="app" class="private-false" data-theme-pref="dark">
+
+  <!-- ===================================================================
+       SHARED SVG ICON SPRITE — assets/icons/*.svg equivalents
+       =================================================================== -->
+  <svg class="hidden" aria-hidden="true">
+    <defs>
+      <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></symbol>
+      <symbol id="i-forward" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+      <symbol id="i-reload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 21v-6h6"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></symbol>
+      <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></symbol>
+      <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></symbol>
+      <symbol id="i-tabs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="3"/><path d="M4 9h16"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z"/><path d="M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></symbol>
+      <symbol id="i-bookmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
+      <symbol id="i-bookmark-filled" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5M12 8v5l4 2"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 12l5 5 5-5"/><path d="M4 20h16"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.9l.06.06a2 2 0 1 1-2.8 2.8l-.06-.06a1.7 1.7 0 0 0-1.9-.34 1.7 1.7 0 0 0-1 1.55V20a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.9.34l-.06.06a2 2 0 1 1-2.8-2.8l.06-.06a1.7 1.7 0 0 0 .34-1.9 1.7 1.7 0 0 0-1.55-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.9l-.06-.06a2 2 0 1 1 2.8-2.8l.06.06a1.7 1.7 0 0 0 1.9.34H10a1.7 1.7 0 0 0 1-1.55V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.9-.34l.06-.06a2 2 0 1 1 2.8 2.8l-.06.06a1.7 1.7 0 0 0-.34 1.9V10a1.7 1.7 0 0 0 1.55 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></symbol>
+      <symbol id="i-chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+      <symbol id="i-incognito" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15h16M6 15l1.5-4h9L18 15"/><circle cx="8.5" cy="17.5" r="1.4"/><circle cx="15.5" cy="17.5" r="1.4"/><path d="M2 12s2-6 10-6 10 6 10 6"/></symbol>
+      <symbol id="i-translate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M8 4v2c0 4-2 8-6 10M6 12c1.5 2 4 3.5 6 4"/><path d="M14 20l4-9 4 9M15.5 17h5"/></symbol>
+      <symbol id="i-align" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h14"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="1.3" fill="currentColor" stroke="none"/><circle cx="5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="5" cy="18" r="1.3" fill="currentColor" stroke="none"/><path d="M9 6h11M9 12h11M9 18h11"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20"/></symbol>
+      <symbol id="i-msg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 1 1-3.4-6.5"/><path d="M21 4l-6.5 6.5"/></symbol>
+      <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+      <symbol id="i-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4L10 14"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/></symbol>
+      <symbol id="i-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></symbol>
+      <symbol id="i-compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M15.5 8.5l-2.2 5.8-5.8 2.2 2.2-5.8z"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7l8 5-8 5z"/></symbol>
+      <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="3"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="14" r="3.4"/></symbol>
+      <symbol id="i-bubble" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.2 6.4L4 20l1.2-3.6A7.96 7.96 0 0 1 4 12z"/></symbol>
+      <symbol id="i-wave" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M6 15v3M10.5 9v9M15 12.5v6M19 7v11"/></symbol>
+      <!-- Nexa Browser mark: original colorful pinwheel emblem (not a reproduction of any third-party browser logo) -->
+      <symbol id="i-nexa-logo" viewBox="0 0 52 52">
+        <path d="M26,26 L26,4 A22,22 0 0 1 48,26 Z" fill="#3B82F6"/>
+        <path d="M26,26 L48,26 A22,22 0 0 1 26,48 Z" fill="#F43F5E"/>
+        <path d="M26,26 L26,48 A22,22 0 0 1 4,26 Z" fill="#12B7A6"/>
+        <path d="M26,26 L4,26 A22,22 0 0 1 26,4 Z" fill="#F5A524"/>
+        <circle cx="26" cy="26" r="10.5" fill="#FFFFFF"/>
+        <path d="M30.7,21.3 L28.6,27.2 L22.7,29.3 L24.8,23.4 Z" fill="#6C4CF1"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- ===================================================================
+       LOGO — assets/logo.svg
+       =================================================================== -->
+  <template id="tpl-brand-mark">
+    <svg viewBox="0 0 52 52" class="brand-mark" role="img" aria-label="Nexa Browser logo">
+      <use href="#i-nexa-logo"/>
+    </svg>
+  </template>
+
+  <!-- ===================================================================
+       TOP BROWSER BAR
+       =================================================================== -->
+  <header class="topbar safe-top" id="topbar">
+    <button class="icon-btn" id="btnBack" aria-label="Go back" disabled><svg><use href="#i-back"/></svg></button>
+    <button class="icon-btn" id="btnForward" aria-label="Go forward" disabled><svg><use href="#i-forward"/></svg></button>
+    <div class="address-pill" id="addressPill">
+      <svg class="lock" id="lockIcon"><use href="#i-lock"/></svg>
+      <input id="addressInput" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search or enter address" aria-label="Address and search bar">
+      <button class="icon-btn" id="btnReload" aria-label="Reload page" style="width:30px;height:30px;"><svg style="width:17px;height:17px;"><use href="#i-reload"/></svg></button>
+    </div>
+    <span class="private-chip"><svg><use href="#i-incognito"/></svg>Private</span>
+    <button class="icon-btn" id="btnShare" aria-label="Share page"><svg><use href="#i-share"/></svg></button>
+    <button class="icon-btn tab-square-btn" id="btnTabsTop" aria-label="Open tabs"><span class="tab-square" id="tabCountTop">1</span></button>
+    <button class="icon-btn" id="btnMenu" aria-label="Open menu"><svg><use href="#i-menu"/></svg></button>
+  </header>
+
+  <!-- FIND IN PAGE -->
+  <div class="findbar hidden" id="findBar">
+    <button class="icon-btn" id="btnFindClose" aria-label="Close find bar" style="width:34px;height:34px;"><svg style="width:16px;height:16px;"><use href="#i-close"/></svg></button>
+    <input id="findInput" type="text" placeholder="Find in page" aria-label="Find in page">
+    <span class="match-count" id="findCount">0/0</span>
+    <button class="icon-btn" id="btnFindPrev" aria-label="Previous match" style="width:32px;height:32px;"><svg style="width:16px;height:16px;transform:rotate(-90deg);"><use href="#i-chev-r"/></svg></button>
+    <button class="icon-btn" id="btnFindNext" aria-label="Next match" style="width:32px;height:32px;"><svg style="width:16px;height:16px;transform:rotate(90deg);"><use href="#i-chev-r"/></svg></button>
+  </div>
+
+  <!-- ===================================================================
+       CONTENT AREA (home / page frame / states)
+       =================================================================== -->
+  <main class="content-area">
+    <div class="progress-line" id="progressLine"></div>
+
+    <!-- HOME / NEW TAB -->
+    <section class="home-screen" id="homeScreen">
+      <div class="home-brand" id="homeBrandSlot">
+        <svg viewBox="0 0 52 52" class="brand-mark brand-mark-big" role="img" aria-label="Nexa Browser logo"><use href="#i-nexa-logo"/></svg>
+        <div class="brand-word">Nexa Browser</div>
+        <div class="brand-tagline">Browse · Ask · Understand</div>
+      </div>
+      <h1 class="home-greeting">What do you want<br>to explore?</h1>
+
+      <div class="home-search">
+        <svg style="width:18px;height:18px;color:var(--text-faint);flex-shrink:0;"><use href="#i-search"/></svg>
+        <input id="homeInput" type="text" inputmode="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search or type a URL" aria-label="Search or enter address">
+        <button class="mic-btn icon-btn" id="btnMic" aria-label="Voice search"><svg><use href="#i-mic"/></svg></button>
+        <button class="search-go" id="btnGo" aria-label="Go"><svg><use href="#i-search"/></svg></button>
+      </div>
+
+      <div class="section-label">Shortcuts</div>
+      <div class="shortcut-grid" id="shortcutGrid"></div>
+
+      <div class="section-label">Recent<span class="clear-link" id="btnClearRecent">Clear</span></div>
+      <div class="recent-list" id="recentList"></div>
+
+      <div class="ai-card" id="homeAiCard">
+        <div class="ai-card-top">
+          <div class="ai-card-icon"><svg><use href="#i-spark"/></svg></div>
+          <div class="ai-card-title">Ask Nexa AI</div>
+        </div>
+        <div class="ai-card-desc">Summarize any page, pull out key points, or ask questions about what you're reading — right inside the browser.</div>
+        <div class="ai-card-cta">Open assistant<svg><use href="#i-chev-r"/></svg></div>
+      </div>
+    </section>
+
+    <!-- PAGE FRAME -->
+    <iframe class="page-frame hidden" id="pageFrame" title="Web page content" referrerpolicy="no-referrer"></iframe>
+
+    <!-- Always-available escape hatch. Whether a framed page silently
+         fails, blocks, or renders a native browser error, this stays
+         reachable so the user is never stuck. -->
+    <button class="floating-open-external hidden" id="floatingOpenExternal">
+      <svg><use href="#i-external"/></svg>Open in Browser
+    </button>
+
+    <!-- LOADING SKELETON -->
+    <div class="loading-skel hidden" id="loadingSkel">
+      <div class="skel-bar" style="width:40%;height:16px;"></div>
+      <div class="skel-bar" style="width:90%;"></div>
+      <div class="skel-bar" style="width:78%;"></div>
+      <div class="skel-bar" style="width:85%;"></div>
+      <div class="skel-bar" style="width:55%;margin-top:16px;height:120px;border-radius:12px;"></div>
+      <div class="skel-bar" style="width:70%;"></div>
+      <div class="skel-bar" style="width:60%;"></div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div class="state-layer hidden" id="errorState">
+      <div class="state-icon"><svg><use href="#i-error"/></svg></div>
+      <div class="state-title">This page can't be reached</div>
+      <div class="state-desc" id="errorDesc">The address may be incorrect, or the site may be unavailable in this preview environment.</div>
+      <button class="btn primary block" id="btnErrorOpenExternal" style="margin-top:6px;"><svg style="width:15px;height:15px;"><use href="#i-external"/></svg>Open in Browser</button>
+      <div class="state-actions">
+        <button class="btn ghost" id="btnErrorHome">Go home</button>
+        <button class="btn ghost" id="btnErrorRetry">Try again</button>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE (used for e.g. blank private tab) -->
+    <div class="state-layer hidden" id="emptyState">
+      <div class="state-icon"><svg><use href="#i-globe"/></svg></div>
+      <div class="state-title">Nothing here yet</div>
+      <div class="state-desc">Enter a web address or search above to get started.</div>
+    </div>
+
+    <!-- SEARCH RESULTS (native results list — not a framed search-engine page) -->
+    <section class="search-results hidden" id="searchResultsView">
+      <div class="search-results-head" id="searchResultsQuery">Searching…</div>
+      <div class="search-tabs" id="searchTabs">
+        <button class="search-tab active" data-search-type="web">All</button>
+        <button class="search-tab" data-search-type="images">Images</button>
+        <button class="search-tab" data-search-type="shopping">Shopping</button>
+      </div>
+      <div class="search-results-list" id="searchResultsList"></div>
+    </section>
+  </main>
+
+  <!-- ===================================================================
+       BOTTOM NAVIGATION
+       =================================================================== -->
+  <nav class="bottom-nav safe-bottom" id="bottomNav">
+    <button class="nav-btn" id="navBack" aria-label="Back"><svg><use href="#i-back"/></svg><span class="label">Back</span></button>
+    <button class="nav-btn" id="navForward" aria-label="Forward"><svg><use href="#i-forward"/></svg><span class="label">Forward</span></button>
+    <button class="nav-btn active" id="navHome" aria-label="Home"><svg><use href="#i-home"/></svg><span class="label">Home</span></button>
+    <button class="nav-btn" id="navAi" aria-label="Nexa AI"><svg><use href="#i-spark"/></svg><span class="label">AI</span></button>
+    <button class="nav-btn" id="navNewTab" aria-label="New tab"><svg><use href="#i-plus"/></svg><span class="label">New tab</span></button>
+    <button class="nav-btn" id="navTabs" aria-label="Tabs"><svg><use href="#i-tabs"/></svg><span class="label">Tabs</span><span class="tab-count-badge" id="tabCountBadge">1</span></button>
+  </nav>
+
+  <!-- ===================================================================
+       SCRIM (shared by sheets)
+       =================================================================== -->
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ===================================================================
+       MENU SHEET
+       =================================================================== -->
+  <div class="sheet" id="menuSheet" role="dialog" aria-label="Browser menu">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title">Menu</div><button class="icon-btn" data-close-sheet><svg><use href="#i-close"/></svg></button></div>
+    <div class="sheet-body">
+      <div class="menu-list">
+        <button class="menu-item" id="mNewTab"><svg><use href="#i-plus"/></svg><span>New Tab</span></button>
+        <button class="menu-item" id="mNewPrivateTab"><svg><use href="#i-incognito"/></svg><span>New Private Tab</span></button>
+        <div class="menu-sep"></div>
+        <button class="menu-item" id="mBookmarks"><svg><use href="#i-bookmark"/></svg><span>Bookmarks</span></button>
+        <button class="menu-item" id="mHistory"><svg><use href="#i-history"/></svg><span>History</span></button>
+        <button class="menu-item" id="mDownloads"><svg><use href="#i-download"/></svg><span>Downloads</span></button>
+        <div class="menu-sep"></div>
+        <button class="menu-item" id="mFind"><svg><use href="#i-search"/></svg><span>Find in Page</span></button>
+        <button class="menu-item" id="mOpenExternal"><svg><use href="#i-external"/></svg><span>Open in Browser</span></button>
+        <button class="menu-item" id="mShare"><svg><use href="#i-share"/></svg><span>Share</span></button>
+        <button class="menu-item" id="mAddBookmark"><svg><use href="#i-bookmark"/></svg><span>Add Bookmark</span></button>
+        <div class="menu-sep"></div>
+        <button class="menu-item" id="mSettings"><svg><use href="#i-settings"/></svg><span>Settings</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       AI SHEET
+       =================================================================== -->
+  <div class="sheet" id="aiSheet" role="dialog" aria-label="Nexa AI assistant" style="max-height:80%;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title"><svg class="spark"><use href="#i-spark"/></svg>Nexa AI</div>
+      <button class="icon-btn" data-close-sheet><svg><use href="#i-close"/></svg></button>
+    </div>
+    <div class="sheet-body" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+      <div class="ai-actions-row" id="aiActionsRow">
+        <button class="ai-chip" data-ai-action="summarize"><svg><use href="#i-align"/></svg>Summarize</button>
+        <button class="ai-chip" data-ai-action="explain"><svg><use href="#i-book"/></svg>Explain</button>
+        <button class="ai-chip" data-ai-action="keypoints"><svg><use href="#i-list"/></svg>Key Points</button>
+        <button class="ai-chip" data-ai-action="translate"><svg><use href="#i-translate"/></svg>Translate</button>
+      </div>
+      <div class="ai-chat" id="aiChat">
+        <div class="ai-empty" id="aiEmptyState">Ask about this page, or tap an action above to get started with <b id="aiPageLabel">this page</b>.</div>
+      </div>
+      <div class="ai-input-row">
+        <textarea id="aiInput" rows="1" placeholder="Ask anything about this page…" aria-label="Ask Nexa AI"></textarea>
+        <button class="ai-send" id="aiSend" aria-label="Send"><svg><use href="#i-send"/></svg></button>
+      </div>
+      <div class="ai-mode-note" id="aiModeNote"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       TABS PANEL
+       =================================================================== -->
+  <section class="panel" id="tabsPanel">
+    <div class="panel-header">
+      <div class="panel-title">Tabs</div>
+      <button class="icon-btn" id="btnTabsClose"><svg><use href="#i-close"/></svg></button>
+    </div>
+    <div class="panel-body">
+      <div class="tabs-toolbar">
+        <div class="seg">
+          <button class="seg-btn active" data-tab-filter="normal">Open</button>
+          <button class="seg-btn" data-tab-filter="private">Private</button>
+        </div>
+        <button class="icon-btn" id="btnNewTabPanel" aria-label="New tab"><svg><use href="#i-plus"/></svg></button>
+      </div>
+      <div class="tab-grid" id="tabGrid"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       HISTORY PANEL
+       =================================================================== -->
+  <section class="panel" id="historyPanel">
+    <div class="panel-header">
+      <button class="icon-btn" id="btnHistoryBack"><svg><use href="#i-back"/></svg></button>
+      <div class="panel-title">History</div>
+      <button class="icon-btn" id="btnHistoryClear" aria-label="Clear history"><svg><use href="#i-trash"/></svg></button>
+    </div>
+    <div class="panel-body" id="historyBody"></div>
+  </section>
+
+  <!-- ===================================================================
+       BOOKMARKS PANEL
+       =================================================================== -->
+  <section class="panel" id="bookmarksPanel">
+    <div class="panel-header">
+      <button class="icon-btn" id="btnBookmarksBack"><svg><use href="#i-back"/></svg></button>
+      <div class="panel-title">Bookmarks</div>
+      <span style="width:44px;"></span>
+    </div>
+    <div class="panel-body" id="bookmarksBody"></div>
+  </section>
+
+  <!-- ===================================================================
+       DOWNLOADS PANEL
+       =================================================================== -->
+  <section class="panel" id="downloadsPanel">
+    <div class="panel-header">
+      <button class="icon-btn" id="btnDownloadsBack"><svg><use href="#i-back"/></svg></button>
+      <div class="panel-title">Downloads</div>
+      <button class="icon-btn" id="btnDownloadDemo" aria-label="Simulate a download"><svg><use href="#i-plus"/></svg></button>
+    </div>
+    <div class="panel-body" id="downloadsBody"></div>
+  </section>
+
+  <!-- ===================================================================
+       SETTINGS PANEL
+       =================================================================== -->
+  <section class="panel" id="settingsPanel">
+    <div class="panel-header">
+      <button class="icon-btn" id="btnSettingsBack"><svg><use href="#i-back"/></svg></button>
+      <div class="panel-title">Settings</div>
+      <span style="width:44px;"></span>
+    </div>
+    <div class="panel-body">
+
+      <div class="settings-group">
+        <div class="settings-group-title">General</div>
+        <div class="settings-card">
+          <div class="setting-row actionable" id="rowSearchEngine">
+            <div class="setting-text"><div class="setting-label">Search engine</div></div>
+            <div class="setting-value" id="valSearchEngine">Google</div>
+            <svg class="chev"><use href="#i-chev-r"/></svg>
+          </div>
+          <div class="setting-row actionable" id="rowHomepage">
+            <div class="setting-text"><div class="setting-label">Homepage</div><div class="setting-desc">Page shown when Nexa opens</div></div>
+            <div class="setting-value" id="valHomepage">Nexa Home</div>
+            <svg class="chev"><use href="#i-chev-r"/></svg>
+          </div>
+          <div class="setting-row actionable" id="rowNewTabBehavior">
+            <div class="setting-text"><div class="setting-label">New tab opens</div></div>
+            <div class="setting-value" id="valNewTabBehavior">Nexa Home</div>
+            <svg class="chev"><use href="#i-chev-r"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Appearance</div>
+        <div class="settings-card">
+          <div class="setting-row">
+            <div class="setting-text"><div class="setting-label">Theme</div></div>
+          </div>
+          <div class="seg-pills" style="padding-bottom:12px;">
+            <button class="pill-opt" data-theme-opt="light">Light</button>
+            <button class="pill-opt" data-theme-opt="dark">Dark</button>
+            <button class="pill-opt" data-theme-opt="system">System</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Privacy</div>
+        <div class="settings-card">
+          <div class="setting-row actionable" id="rowClearData">
+            <div class="setting-text"><div class="setting-label">Clear browsing data</div><div class="setting-desc">History, cookies, and site data</div></div>
+            <svg class="chev"><use href="#i-chev-r"/></svg>
+          </div>
+          <div class="setting-row">
+            <div class="setting-text"><div class="setting-label">Cookies</div><div class="setting-desc">Allow sites to save cookies</div></div>
+            <button class="switch on" data-toggle="cookies"></button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-text"><div class="setting-label">Tracking protection</div><div class="setting-desc">Block known trackers where supported</div></div>
+            <button class="switch on" data-toggle="tracking"></button>
+          </div>
+          <div class="setting-row actionable" id="rowPrivateInfo">
+            <div class="setting-text"><div class="setting-label">Private browsing</div><div class="setting-desc">Prototype UI only — see note</div></div>
+            <svg class="chev"><use href="#i-chev-r"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">AI</div>
+        <div class="settings-card">
+          <div class="setting-row">
+            <div class="setting-text"><div class="setting-label">Nexa AI</div><div class="setting-desc">Enable the AI assistant panel</div></div>
+            <button class="switch on" data-toggle="aiEnabled"></button>
+          </div>
+          <div class="setting-row actionable" id="rowAiProvider">
+            <div class="setting-text"><div class="setting-label">AI provider</div><div class="setting-desc">Connected via /api/ai backend</div></div>
+            <div class="setting-value" id="valAiProvider">Not connected</div>
+            <svg class="chev"><use href="#i-chev-r"/></svg>
+          </div>
+          <div class="setting-row actionable" id="rowAiStyle">
+            <div class="setting-text"><div class="setting-label">Response style</div></div>
+            <div class="setting-value" id="valAiStyle">Balanced</div>
+            <svg class="chev"><use href="#i-chev-r"/></svg>
+          </div>
+          <div class="setting-row">
+            <div class="setting-text"><div class="setting-label">Page-data processing</div><div class="setting-desc">Visible page text is sent to your configured AI backend only when you use an AI action — never automatically.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Browser</div>
+        <div class="settings-card">
+          <div class="setting-row">
+            <div class="setting-text"><div class="setting-label">Desktop site</div><div class="setting-desc">Request desktop version by default</div></div>
+            <button class="switch" data-toggle="desktopSite"></button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-text"><div class="setting-label">JavaScript</div><div class="setting-desc">Allow sites to run JavaScript</div></div>
+            <button class="switch on" data-toggle="javascriptEnabled"></button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-text"><div class="setting-label">Pop-ups</div><div class="setting-desc">Block pop-ups by default</div></div>
+            <button class="switch on" data-toggle="blockPopups"></button>
+          </div>
+          <div class="setting-row actionable" id="rowDownloadsSettings">
+            <div class="setting-text"><div class="setting-label">Downloads</div></div>
+            <svg class="chev"><use href="#i-chev-r"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">About</div>
+        <div class="settings-card">
+          <div class="about-block">
+            <svg viewBox="0 0 52 52" class="brand-mark"><use href="#i-nexa-logo"/></svg>
+            <div style="font-family:var(--font-display);font-weight:600;">Nexa Browser</div>
+            <div class="v">Version 1.0.0 (prototype)</div>
+            <p>Nexa Browser is a web prototype of a mobile browser shell. Real page rendering, downloads, permissions, and private-browsing enforcement require the Android WebView build — see README.md.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       GENERIC SELECT SHEET (search engine / homepage / provider / style)
+       =================================================================== -->
+  <div class="sheet" id="selectSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div class="sheet-title" id="selectSheetTitle">Choose</div><button class="icon-btn" data-close-sheet><svg><use href="#i-close"/></svg></button></div>
+    <div class="sheet-body" id="selectSheetBody"></div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL (confirm dialogs)
+       =================================================================== -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-box">
+      <div class="modal-title" id="modalTitle">Are you sure?</div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div class="modal-actions">
+        <button class="btn ghost" id="modalCancel">Cancel</button>
+        <button class="btn danger" id="modalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-stack" id="toastStack"></div>
+
+</div>
+</div>
+
+<script>
+/* =========================================================================
+   NEXA BROWSER — application scripts
+   Organized as independent modules (mirrors the intended js/*.js split:
+   storage.js, search.js, browser-engine.js, browser.js, tabs.js, ai.js,
+   history.js, bookmarks.js, settings.js, app.js)
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------
+   storage.js — StorageManager
+   Wraps localStorage. In the Android build this can be swapped for
+   native persistence without touching call sites.
+--------------------------------------------------------------------- */
+const StorageManager = (() => {
+  const KEYS = {
+    history: 'nexa_history',
+    bookmarks: 'nexa_bookmarks',
+    settings: 'nexa_settings',
+    tabs: 'nexa_tabs',
+    theme: 'nexa_theme',
+    downloads: 'nexa_downloads'
+  };
+  function get(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(e){ return fallback; }
+  }
+  function set(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); return true; }
+    catch(e){ console.warn('StorageManager: write failed', e); return false; }
+  }
+  function remove(key){ try{ localStorage.removeItem(key); }catch(e){} }
+  return { KEYS, get, set, remove };
+})();
+
+/* ---------------------------------------------------------------------
+   search.js — SearchConfig + query classification
+--------------------------------------------------------------------- */
+const SearchConfig = (() => {
+  const ENGINES = {
+    google:     { name:'Google',     url:'https://www.google.com/search?q=' },
+    bing:       { name:'Bing',       url:'https://www.bing.com/search?q=' },
+    duckduckgo: { name:'DuckDuckGo', url:'https://duckduckgo.com/?q=' }
+  };
+  function current(){
+    const s = SettingsManager.get();
+    return ENGINES[s.searchEngine] || ENGINES.google;
+  }
+  function buildSearchUrl(query){
+    return current().url + encodeURIComponent(query);
+  }
+  // Decide whether input looks like a URL or a search query.
+  function isLikelyUrl(input){
+    const v = input.trim();
+    if(!v) return false;
+    if(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(v)) return true; // has a scheme
+    if(/^localhost(:\d+)?(\/.*)?$/i.test(v)) return true;
+    // domain-ish: word(.word)+ optionally with path/port, no spaces
+    const domainLike = /^[^\s]+\.[a-z]{2,}(:\d+)?(\/[^\s]*)?$/i;
+    if(domainLike.test(v) && !v.includes(' ')) return true;
+    return false;
+  }
+  function normalizeUrl(input){
+    let v = input.trim();
+    if(!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(v)) v = 'https://' + v;
+    return v;
+  }
+  // The single entry point used by the address bar and home search box.
+  function resolveInput(input){
+    const v = input.trim();
+    if(!v) return null;
+    if(isLikelyUrl(v)) return { type:'url', value: normalizeUrl(v) };
+    return { type:'search', value: buildSearchUrl(v), query: v };
+  }
+  return { ENGINES, current, buildSearchUrl, isLikelyUrl, normalizeUrl, resolveInput };
+})();
+
+/* ---------------------------------------------------------------------
+   browser-engine.js — BrowserEngine
+   Abstraction boundary between the UI and the actual rendering engine.
+   In the Android app, window.AndroidBrowser is injected by the WebView
+   host and every call below is routed to it. In the web prototype we
+   fall back to an <iframe>-based implementation that is clearly NOT a
+   full browser engine (no true multi-process isolation, no extensions,
+   many sites block iframe embedding entirely).
+
+   Browser UI  →  BrowserEngine  →  Android WebView (window.AndroidBrowser)
+                              ↘  Fallback: <iframe> (prototype only)
+--------------------------------------------------------------------- */
+const BrowserEngine = (() => {
+  const frame = document.getElementById('pageFrame');
+  let listeners = { load:[], error:[], progress:[] };
+  let currentUrl = '';
+  let watchdog = null;
+
+  function hasNativeBridge(){
+    return !!(window.AndroidBrowser && typeof window.AndroidBrowser.openUrl === 'function');
+  }
+
+  function on(evt, fn){ (listeners[evt] = listeners[evt] || []).push(fn); }
+  function emit(evt, payload){ (listeners[evt]||[]).forEach(fn=>{ try{fn(payload);}catch(e){console.error(e);} }); }
+
+  // ---- Fallback (iframe) implementation --------------------------------
+  const fallback = {
+    openUrl(url){
+      currentUrl = url;
+      clearTimeout(watchdog);
+      // Real top-level navigation instead of an <iframe>. Framing is what
+      // X-Frame-Options/CSP block — a normal top-level page load has none
+      // of those restrictions, so this is what actually guarantees every
+      // site opens, at the cost of temporarily leaving Nexa Browser's own
+      // UI (the device/back gesture returns to it, same as any browser tab
+      // history). Once wrapped in a native Android app, replace this with
+      // AndroidBrowser.openUrl(url) driving a dedicated native WebView
+      // screen instead, to keep the app shell in place.
+      window.location.href = url;
+    },
+    goBack(){ try{ frame.contentWindow.history.back(); }catch(e){ emit('error', {url:currentUrl, reason:'nav-blocked'}); } },
+    goForward(){ try{ frame.contentWindow.history.forward(); }catch(e){ emit('error', {url:currentUrl, reason:'nav-blocked'}); } },
+    reload(){ this.openUrl(currentUrl); },
+    getCurrentUrl(){ return currentUrl; },
+  };
+
+  frame.addEventListener('load', ()=>{
+    clearTimeout(watchdog);
+    // A frame blocked by X-Frame-Options/CSP still fires 'load' — the browser
+    // just renders its own internal "page not available" interstitial inside
+    // the iframe instead of the real site. That interstitial is a same-origin
+    // document (unlike a genuinely loaded external page, which we can never
+    // read), so if contentDocument IS readable and looks like an error page,
+    // treat it as blocked rather than trusting 'load' blindly.
+    let blocked = false;
+    try{
+      const doc = frame.contentDocument;
+      if(doc){
+        const signal = ((doc.title||'') + ' ' + ((doc.body && doc.body.innerText) || '')).toLowerCase();
+        if(/not available|err_blocked|err_connection|refused to connect|blocked_by_csp|can.?t be reached|refused to display|x-frame-options/.test(signal)){
+          blocked = true;
+        }
+      }
+    }catch(e){
+      // Truly cross-origin: the real external page loaded successfully.
+      // This is expected and fine — we simply can't (and don't need to)
+      // inspect its content from here.
+    }
+    if(blocked){
+      emit('error', { url: currentUrl, reason:'blocked' });
+      return;
+    }
+    emit('progress', 100);
+    emit('load', { url: currentUrl });
+  });
+
+  // ---- Public API (mirrors the Android bridge surface) ------------------
+  function openUrl(url){
+    if(hasNativeBridge()) return window.AndroidBrowser.openUrl(url);
+    return fallback.openUrl(url);
+  }
+  function goBack(){ return hasNativeBridge() ? window.AndroidBrowser.goBack() : fallback.goBack(); }
+  function goForward(){ return hasNativeBridge() ? window.AndroidBrowser.goForward() : fallback.goForward(); }
+  function reload(){ return hasNativeBridge() ? window.AndroidBrowser.reload() : fallback.reload(); }
+  function createTab(){ return hasNativeBridge() ? window.AndroidBrowser.createTab() : null; }
+  function closeTab(id){ return hasNativeBridge() ? window.AndroidBrowser.closeTab(id) : null; }
+  function downloadFile(url){ return hasNativeBridge() ? window.AndroidBrowser.downloadFile(url) : DownloadsManager.simulate(url); }
+  function shareUrl(url){ return hasNativeBridge() ? window.AndroidBrowser.shareUrl(url) : ShareSheet.fallbackShare(url); }
+  function openSettings(){ return hasNativeBridge() ? window.AndroidBrowser.openSettings() : App.openPanel('settingsPanel'); }
+  function getCurrentUrl(){ return currentUrl; }
+  // Escape hatch to a REAL, fully working page: a genuine top-level browser
+  // tab/window has no iframe restrictions, so X-Frame-Options/CSP framing
+  // rules (which block big platforms inside our <iframe> preview) simply
+  // don't apply here. In the Android build this can route to a native
+  // Custom Tab / external browser intent instead.
+  function openExternally(url){
+    const target = url || currentUrl;
+    if(!target) return;
+    if(hasNativeBridge() && window.AndroidBrowser.openExternally) return window.AndroidBrowser.openExternally(target);
+    window.open(target, '_blank', 'noopener,noreferrer');
+  }
+
+  return { on, openUrl, goBack, goForward, reload, createTab, closeTab, downloadFile, shareUrl, openSettings, getCurrentUrl, openExternally, hasNativeBridge };
+})();
+
+/* ---------------------------------------------------------------------
+   ai.js — page-text extraction + AI action pipeline
+   Current webpage → extractPageText() → user action → askAI() → response
+--------------------------------------------------------------------- */
+const NexaAI = (() => {
+  const chatEl = document.getElementById('aiChat');
+  const emptyEl = document.getElementById('aiEmptyState');
+  const inputEl = document.getElementById('aiInput');
+  const sendBtn = document.getElementById('aiSend');
+  const pageLabel = document.getElementById('aiPageLabel');
+  const modeNote = document.getElementById('aiModeNote');
+  let history = [];
+
+  // Reads visible text from the current page. In this web prototype the
+  // <iframe> is almost always cross-origin, so the browser's same-origin
+  // policy blocks contentDocument access — this is a real security
+  // boundary, not a bug. The Android build replaces this function with
+  // one that pulls document.body.innerText via a WebView JS bridge
+  // (see README → "Connecting real page extraction").
+  function extractPageText(){
+    const url = BrowserEngine.getCurrentUrl();
+    if(!url) return { ok:false, text:'', reason:'no-page' };
+    try{
+      const doc = document.getElementById('pageFrame').contentDocument;
+      if(doc && doc.body) return { ok:true, text: doc.body.innerText.slice(0, 6000) };
+      throw new Error('no doc');
+    }catch(e){
+      return { ok:false, text:'', reason:'cross-origin', url };
+    }
+  }
+
+  function currentPageLabel(){
+    const url = BrowserEngine.getCurrentUrl();
+    if(!url) return 'this page';
+    try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return 'this page'; }
+  }
+
+  // Single backend abstraction. No API key ever lives in this file —
+  // requests go to a same-origin relay endpoint that your server signs
+  // with the real key. See README → "Connecting the AI backend".
+  async function askAI(prompt, pageText){
+    const settings = SettingsManager.get();
+    if(!settings.aiEnabled){
+      throw { code:'ai-disabled', message:'Nexa AI is turned off in Settings.' };
+    }
+    const body = { prompt, pageText: pageText || '', style: settings.aiResponseStyle, provider: settings.aiProvider };
+    try{
+      const res = await fetch('/api/ai', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify(body)
+      });
+      if(!res.ok) throw new Error('Backend responded with ' + res.status);
+      const data = await res.json();
+      return data.reply || data.text || '';
+    }catch(err){
+      // No backend wired up in this prototype (/api/ai doesn't exist yet).
+      // We surface a clearly-labeled demo response instead of pretending
+      // this is a real model call.
+      return demoResponse(prompt, pageText);
+    }
+  }
+
+  function demoResponse(prompt, pageText){
+    const label = currentPageLabel();
+    const hasText = pageText && pageText.length > 0;
+    return `Demo mode — no AI backend connected yet.\n\nOnce /api/ai is wired to a real model, this is where a response about ${label} would appear` +
+      (hasText ? ', grounded in the page text that was just extracted.' : ', once page text can be extracted (this page is cross-origin, so the prototype can\'t read it — see Settings → AI).') +
+      `\n\nYour request: "${prompt}"`;
+  }
+
+  function actionPrompt(action){
+    const map = {
+      summarize: 'Summarize this page in a short paragraph.',
+      explain: 'Explain what this page is about in simple terms.',
+      keypoints: 'List the key points of this page as short bullet points.',
+      translate: 'Translate the main content of this page.'
+    };
+    return map[action] || action;
+  }
+
+  function renderEmpty(){
+    emptyEl.style.display = history.length ? 'none' : 'block';
+    pageLabel.textContent = currentPageLabel();
+  }
+
+  function addMessage(role, text){
+    if(history.length === 0) emptyEl.style.display = 'none';
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + role;
+    div.textContent = text;
+    chatEl.appendChild(div);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    history.push({ role, text });
+  }
+
+  function addTyping(){
+    const div = document.createElement('div');
+    div.className = 'ai-msg assistant typing';
+    div.id = 'aiTyping';
+    div.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+    chatEl.appendChild(div);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+  function removeTyping(){ const t = document.getElementById('aiTyping'); if(t) t.remove(); }
+
+  async function runAction(action){
+    const prompt = actionPrompt(action);
+    addMessage('user', prompt.replace('this page','the current page'));
+    addTyping();
+    const extraction = extractPageText();
+    try{
+      const reply = await askAI(prompt, extraction.text);
+      removeTyping();
+      addMessage('assistant', reply);
+    }catch(err){
+      removeTyping();
+      addMessage('assistant', err.message || 'Something went wrong reaching Nexa AI.');
+    }
+  }
+  async function askAboutPage(question){
+    if(!question.trim()) return;
+    addMessage('user', question.trim());
+    addTyping();
+    const extraction = extractPageText();
+    try{
+      const reply = await askAI(question.trim(), extraction.text);
+      removeTyping();
+      addMessage('assistant', reply);
+    }catch(err){
+      removeTyping();
+      addMessage('assistant', err.message || 'Something went wrong reaching Nexa AI.');
+    }
+  }
+  function summarizePage(){ return runAction('summarize'); }
+  function explainPage(){ return runAction('explain'); }
+  function getKeyPoints(){ return runAction('keypoints'); }
+  function translatePage(){ return runAction('translate'); }
+
+  function open(){
+    renderEmpty();
+    const settings = SettingsManager.get();
+    modeNote.textContent = settings.aiProvider === 'not-connected'
+      ? 'Demo mode — connect an AI provider in Settings → AI to get real answers.'
+      : '';
+    App.showSheet('aiSheet');
+  }
+
+  function bind(){
+    document.getElementById('navAi').addEventListener('click', open);
+    document.getElementById('homeAiCard').addEventListener('click', open);
+    document.querySelectorAll('[data-ai-action]').forEach(btn=>{
+      btn.addEventListener('click', ()=> runAction(btn.dataset.aiAction));
+    });
+    sendBtn.addEventListener('click', ()=>{
+      const v = inputEl.value;
+      inputEl.value=''; inputEl.style.height='auto';
+      askAboutPage(v);
+    });
+    inputEl.addEventListener('input', ()=>{
+      inputEl.style.height='auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight,90)+'px';
+      sendBtn.disabled = !inputEl.value.trim();
+    });
+    inputEl.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendBtn.click(); }
+    });
+    sendBtn.disabled = true;
+  }
+
+  return { extractPageText, askAI, summarizePage, explainPage, getKeyPoints, translatePage, askAboutPage, open, bind };
+})();
+
+/* ---------------------------------------------------------------------
+   history.js — HistoryManager
+--------------------------------------------------------------------- */
+const HistoryManager = (() => {
+  function all(){ return StorageManager.get(StorageManager.KEYS.history, []); }
+  function add(entry){
+    if(TabsManager.isPrivateActive()) return; // never log private browsing
+    const list = all();
+    list.unshift({ id: 'h'+Date.now()+Math.random().toString(36).slice(2,6), url: entry.url, title: entry.title || entry.url, time: Date.now() });
+    StorageManager.set(StorageManager.KEYS.history, list.slice(0,300));
+    renderHome();
+  }
+  function removeOne(id){
+    StorageManager.set(StorageManager.KEYS.history, all().filter(h=>h.id!==id));
+    render(); renderHome();
+  }
+  function clearAll(){
+    StorageManager.set(StorageManager.KEYS.history, []);
+    render(); renderHome();
+  }
+  function groupByDay(list){
+    const groups = {};
+    list.forEach(item=>{
+      const d = new Date(item.time);
+      const key = d.toDateString() === new Date().toDateString() ? 'Today' : d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+      (groups[key]=groups[key]||[]).push(item);
+    });
+    return groups;
+  }
+  function timeAgo(ts){
+    const diff = Date.now()-ts, m = Math.floor(diff/60000);
+    if(m<1) return 'just now';
+    if(m<60) return m+'m ago';
+    const h = Math.floor(m/60);
+    if(h<24) return h+'h ago';
+    return Math.floor(h/24)+'d ago';
+  }
+  function render(){
+    const body = document.getElementById('historyBody');
+    const list = all();
+    if(!list.length){
+      body.innerHTML = emptyPanelHtml('i-history','No history yet','Pages you visit will show up here.');
+      return;
+    }
+    const groups = groupByDay(list);
+    body.innerHTML = Object.entries(groups).map(([day, items])=>`
+      <div class="day-heading">${day}</div>
+      ${items.map(item=>`
+        <div class="list-row">
+          <div class="list-icon"><svg><use href="#i-globe"/></svg></div>
+          <div class="list-main" data-open-url="${escapeAttr(item.url)}">
+            <div class="list-title">${escapeHtml(item.title)}</div>
+            <div class="list-sub">${escapeHtml(item.url)}</div>
+          </div>
+          <button class="list-action" data-remove-history="${item.id}" aria-label="Remove"><svg><use href="#i-close"/></svg></button>
+        </div>
+      `).join('')}
+    `).join('');
+    body.querySelectorAll('[data-open-url]').forEach(el=>{
+      el.addEventListener('click', ()=>{ App.closePanel('historyPanel'); TabsManager.navigateActive(el.dataset.openUrl); });
+    });
+    body.querySelectorAll('[data-remove-history]').forEach(el=>{
+      el.addEventListener('click', (e)=>{ e.stopPropagation(); removeOne(el.dataset.removeHistory); });
+    });
+  }
+  function renderHome(){
+    const list = all().slice(0,5);
+    const el = document.getElementById('recentList');
+    if(!list.length){ el.innerHTML = '<div class="empty-inline">Nothing recent yet — start browsing.</div>'; return; }
+    el.innerHTML = list.map(item=>`
+      <div class="recent-row" data-open-url="${escapeAttr(item.url)}">
+        <div class="recent-favicon"><svg><use href="#i-globe"/></svg></div>
+        <div class="recent-meta">
+          <div class="recent-title">${escapeHtml(item.title)}</div>
+          <div class="recent-url">${escapeHtml(item.url)}</div>
+        </div>
+        <div class="recent-time">${timeAgo(item.time)}</div>
+      </div>
+    `).join('');
+    el.querySelectorAll('[data-open-url]').forEach(row=>{
+      row.addEventListener('click', ()=> TabsManager.navigateActive(row.dataset.openUrl));
+    });
+  }
+  return { add, removeOne, clearAll, render, renderHome, all };
+})();
+
+/* ---------------------------------------------------------------------
+   bookmarks.js — BookmarksManager
+--------------------------------------------------------------------- */
+const BookmarksManager = (() => {
+  function all(){ return StorageManager.get(StorageManager.KEYS.bookmarks, []); }
+  function isBookmarked(url){ return all().some(b=>b.url===url); }
+  function add(url, title){
+    if(isBookmarked(url)) return;
+    const list = all();
+    list.unshift({ id:'b'+Date.now(), url, title: title||url, time: Date.now() });
+    StorageManager.set(StorageManager.KEYS.bookmarks, list);
+    render();
+    Toast.show('Bookmark added');
+  }
+  function removeByUrl(url){
+    StorageManager.set(StorageManager.KEYS.bookmarks, all().filter(b=>b.url!==url));
+    render();
+    Toast.show('Bookmark removed');
+  }
+  function toggle(url, title){ isBookmarked(url) ? removeByUrl(url) : add(url, title); }
+  function render(){
+    const body = document.getElementById('bookmarksBody');
+    const list = all();
+    if(!list.length){
+      body.innerHTML = emptyPanelHtml('i-bookmark','No bookmarks yet','Tap the menu → Add Bookmark on any page to save it here.');
+      return;
+    }
+    body.innerHTML = list.map(item=>`
+      <div class="list-row">
+        <div class="list-icon"><svg><use href="#i-globe"/></svg></div>
+        <div class="list-main" data-open-url="${escapeAttr(item.url)}">
+          <div class="list-title">${escapeHtml(item.title)}</div>
+          <div class="list-sub">${escapeHtml(item.url)}</div>
+        </div>
+        <button class="list-action" data-remove-bookmark="${escapeAttr(item.url)}" aria-label="Remove bookmark"><svg><use href="#i-trash"/></svg></button>
+      </div>
+    `).join('');
+    body.querySelectorAll('[data-open-url]').forEach(el=>{
+      el.addEventListener('click', ()=>{ App.closePanel('bookmarksPanel'); TabsManager.navigateActive(el.dataset.openUrl); });
+    });
+    body.querySelectorAll('[data-remove-bookmark]').forEach(el=>{
+      el.addEventListener('click', (e)=>{ e.stopPropagation(); removeByUrl(el.dataset.removeBookmark); });
+    });
+  }
+  return { all, isBookmarked, add, removeByUrl, toggle, render };
+})();
+
+/* ---------------------------------------------------------------------
+   downloads.js (folded into app) — DownloadsManager
+   Prototype-only simulation. Real downloads must be handled by native
+   Android code (permissions, file system access, notification progress).
+--------------------------------------------------------------------- */
+const DownloadsManager = (() => {
+  function all(){ return StorageManager.get(StorageManager.KEYS.downloads, []); }
+  function save(list){ StorageManager.set(StorageManager.KEYS.downloads, list); }
+  function simulate(url){
+    const name = (url && url.split('/').pop()) || ('nexa-file-'+Date.now()+'.bin');
+    const list = all();
+    const item = { id:'d'+Date.now(), name, type: guessType(name), progress:0, status:'downloading', time: Date.now() };
+    list.unshift(item); save(list); render();
+    tick(item.id);
+    return item;
+  }
+  function guessType(name){
+    const ext = (name.split('.').pop()||'').toLowerCase();
+    if(['jpg','jpeg','png','gif','webp'].includes(ext)) return 'Image';
+    if(['mp4','mov','webm'].includes(ext)) return 'Video';
+    if(['mp3','wav'].includes(ext)) return 'Audio';
+    if(['pdf'].includes(ext)) return 'PDF';
+    if(['zip','rar'].includes(ext)) return 'Archive';
+    return 'File';
+  }
+  function tick(id){
+    const step = ()=>{
+      const list = all();
+      const item = list.find(d=>d.id===id);
+      if(!item) return;
+      if(item.status !== 'downloading') return;
+      item.progress = Math.min(100, item.progress + 8 + Math.random()*14);
+      if(item.progress >= 100){ item.progress = 100; item.status = 'completed'; }
+      save(list); render();
+      if(item.status === 'downloading') setTimeout(step, 380);
+    };
+    setTimeout(step, 380);
+  }
+  function removeOne(id){ save(all().filter(d=>d.id!==id)); render(); }
+  function render(){
+    const body = document.getElementById('downloadsBody');
+    const list = all();
+    if(!list.length){
+      body.innerHTML = emptyPanelHtml('i-download','No downloads yet','Files you download will appear here. This prototype simulates progress — the Android build hands off to native download management.');
+      return;
+    }
+    body.innerHTML = list.map(item=>`
+      <div class="list-row" style="align-items:flex-start;">
+        <div class="list-icon" style="margin-top:2px;"><svg><use href="#i-file"/></svg></div>
+        <div class="list-main">
+          <div class="list-title">${escapeHtml(item.name)}</div>
+          <div class="list-sub">${item.type}</div>
+          <div class="dl-progress-track"><div class="dl-progress-fill" style="width:${item.progress}%"></div></div>
+          <div class="dl-status">${item.status==='completed' ? 'Completed' : Math.round(item.progress)+'%'}</div>
+        </div>
+        ${item.status==='completed'
+          ? `<button class="list-action filled" data-open-download="${item.id}" aria-label="Open"><svg><use href="#i-external"/></svg></button>`
+          : `<button class="list-action" data-remove-download="${item.id}" aria-label="Cancel"><svg><use href="#i-close"/></svg></button>`}
+      </div>
+    `).join('');
+    body.querySelectorAll('[data-remove-download]').forEach(el=> el.addEventListener('click', ()=> removeOne(el.dataset.removeDownload)));
+    body.querySelectorAll('[data-open-download]').forEach(el=> el.addEventListener('click', ()=> Toast.show('Opening files requires the Android build')));
+  }
+  return { all, simulate, removeOne, render };
+})();
+
+/* ---------------------------------------------------------------------
+   settings.js — SettingsManager
+--------------------------------------------------------------------- */
+const SettingsManager = (() => {
+  const DEFAULTS = {
+    searchEngine:'google',
+    homepage:'nexa-home',
+    newTabBehavior:'nexa-home',
+    theme:'light',
+    cookies:true,
+    tracking:true,
+    aiEnabled:true,
+    aiProvider:'not-connected',
+    aiResponseStyle:'balanced',
+    desktopSite:false,
+    javascriptEnabled:true,
+    blockPopups:true
+  };
+  function get(){ return Object.assign({}, DEFAULTS, StorageManager.get(StorageManager.KEYS.settings, {})); }
+  function set(partial){
+    const merged = Object.assign({}, get(), partial);
+    StorageManager.set(StorageManager.KEYS.settings, merged);
+    ThemeManager.apply(merged.theme);
+    render();
+    return merged;
+  }
+  function toggle(key){ const s = get(); set({ [key]: !s[key] }); }
+
+  function render(){
+    const s = get();
+    document.getElementById('valSearchEngine').textContent = SearchConfig.ENGINES[s.searchEngine].name;
+    document.getElementById('valHomepage').textContent = s.homepage==='nexa-home' ? 'Nexa Home' : s.homepage;
+    document.getElementById('valNewTabBehavior').textContent = s.newTabBehavior==='nexa-home' ? 'Nexa Home' : s.newTabBehavior;
+    document.getElementById('valAiProvider').textContent = s.aiProvider==='not-connected' ? 'Not connected' : s.aiProvider;
+    document.getElementById('valAiStyle').textContent = s.aiResponseStyle.charAt(0).toUpperCase()+s.aiResponseStyle.slice(1);
+    document.querySelectorAll('[data-toggle]').forEach(sw=>{
+      sw.classList.toggle('on', !!s[sw.dataset.toggle]);
+    });
+    document.querySelectorAll('[data-theme-opt]').forEach(p=>{
+      p.classList.toggle('active', p.dataset.themeOpt === s.theme);
+    });
+  }
+
+  function bind(){
+    document.querySelectorAll('[data-toggle]').forEach(sw=>{
+      sw.addEventListener('click', ()=> toggle(sw.dataset.toggle));
+    });
+    document.querySelectorAll('[data-theme-opt]').forEach(p=>{
+      p.addEventListener('click', ()=> set({ theme: p.dataset.themeOpt }));
+    });
+    document.getElementById('rowSearchEngine').addEventListener('click', ()=>{
+      SelectSheet.open('Search engine', Object.entries(SearchConfig.ENGINES).map(([id,e])=>({id,label:e.name})), get().searchEngine, (id)=> set({ searchEngine:id }));
+    });
+    document.getElementById('rowHomepage').addEventListener('click', ()=>{
+      SelectSheet.open('Homepage', [{id:'nexa-home',label:'Nexa Home'},{id:'https://www.google.com',label:'Google'},{id:'https://www.wikipedia.org',label:'Wikipedia'}], get().homepage, (id)=> set({ homepage:id }));
+    });
+    document.getElementById('rowNewTabBehavior').addEventListener('click', ()=>{
+      SelectSheet.open('New tab opens', [{id:'nexa-home',label:'Nexa Home'},{id:'blank',label:'Blank page'}], get().newTabBehavior, (id)=> set({ newTabBehavior:id }));
+    });
+    document.getElementById('rowAiProvider').addEventListener('click', ()=>{
+      SelectSheet.open('AI provider', [{id:'not-connected',label:'Not connected (demo mode)'},{id:'openai',label:'OpenAI-compatible'},{id:'anthropic',label:'Anthropic-compatible'},{id:'custom',label:'Custom endpoint'}], get().aiProvider, (id)=> set({ aiProvider:id }));
+    });
+    document.getElementById('rowAiStyle').addEventListener('click', ()=>{
+      SelectSheet.open('Response style', [{id:'concise',label:'Concise'},{id:'balanced',label:'Balanced'},{id:'detailed',label:'Detailed'}], get().aiResponseStyle, (id)=> set({ aiResponseStyle:id }));
+    });
+    document.getElementById('rowClearData').addEventListener('click', ()=>{
+      ConfirmModal.open('Clear browsing data?','This removes history, and resets cookie/tracking prototype flags. Bookmarks are kept.', ()=>{
+        HistoryManager.clearAll();
+        Toast.show('Browsing data cleared');
+      });
+    });
+    document.getElementById('rowPrivateInfo').addEventListener('click', ()=>{
+      alert('Private browsing (prototype): Nexa will stop logging history and hide it from the recents list while a private tab is active. It does not encrypt traffic or hide activity from your network/ISP. Full isolated storage and cookie-jar separation are implemented natively once wrapped in Android WebView.');
+    });
+    document.getElementById('rowDownloadsSettings').addEventListener('click', ()=> App.openPanel('downloadsPanel'));
+    render();
+  }
+
+  return { get, set, toggle, render, bind, DEFAULTS };
+})();
+
+/* ---------------------------------------------------------------------
+   ThemeManager — dark / light / system
+--------------------------------------------------------------------- */
+const ThemeManager = (() => {
+  const mq = window.matchMedia('(prefers-color-scheme: light)');
+  function apply(pref){
+    const resolved = pref==='system' ? (mq.matches ? 'light':'dark') : pref;
+    document.documentElement.setAttribute('data-theme', resolved);
+  }
+  mq.addEventListener('change', ()=>{
+    const s = SettingsManager.get();
+    if(s.theme==='system') apply('system');
+  });
+  return { apply };
+})();
+
+/* ---------------------------------------------------------------------
+   tabs.js — TabsManager
+--------------------------------------------------------------------- */
+const TabsManager = (() => {
+  let tabs = [];
+  let activeId = null;
+  let filter = 'normal';
+
+  function persist(){ StorageManager.set(StorageManager.KEYS.tabs, { tabs, activeId }); }
+  function restore(){
+    const saved = StorageManager.get(StorageManager.KEYS.tabs, null);
+    if(saved && saved.tabs && saved.tabs.length){
+      tabs = saved.tabs; activeId = saved.activeId;
+    } else {
+      createTab({ activate:true });
+    }
+  }
+  function active(){ return tabs.find(t=>t.id===activeId) || tabs[0]; }
+  function isPrivateActive(){ const t = active(); return !!(t && t.isPrivate); }
+
+  function createTab(opts={}){
+    const id = 't'+Date.now()+Math.random().toString(36).slice(2,6);
+    const tab = { id, url:'', title:'New Tab', isPrivate: !!opts.isPrivate, history:[], histIdx:-1 };
+    tabs.push(tab);
+    if(opts.activate !== false) activeId = id;
+    persist();
+    renderBadge();
+    if(opts.activate !== false) applyActiveToUI();
+    return tab;
+  }
+  function closeTab(id){
+    const idx = tabs.findIndex(t=>t.id===id);
+    if(idx===-1) return;
+    tabs.splice(idx,1);
+    if(!tabs.length){ createTab({activate:true}); }
+    else if(activeId===id){ activeId = tabs[Math.max(0,idx-1)].id; applyActiveToUI(); }
+    persist(); renderBadge(); renderGrid();
+  }
+  function switchTo(id){
+    activeId = id;
+    persist();
+    applyActiveToUI();
+    App.closePanel('tabsPanel');
+  }
+
+  function navigateActive(rawInput){
+    const tab = active();
+    if(!tab) return;
+    const resolved = typeof rawInput === 'object' ? rawInput : SearchConfig.resolveInput(rawInput);
+    if(!resolved) return;
+    // push history stack for back/forward affordance at the UI level
+    tab.history = tab.history.slice(0, tab.histIdx+1);
+    tab.history.push(resolved.value);
+    tab.histIdx = tab.history.length-1;
+    tab.url = resolved.value;
+    tab.title = resolved.type==='search' ? ('Search: '+resolved.query) : hostnameOf(resolved.value);
+    persist();
+    HistoryManager.add({ url: resolved.value, title: tab.title });
+    renderGrid();
+    if(resolved.type === 'search'){
+      // Every mainstream search engine (Google, Bing, DuckDuckGo) blocks its
+      // results page from being framed at all — that's guaranteed, not
+      // intermittent. So instead of trying (and failing) to show their page,
+      // we fetch real results ourselves via /api/search and render them in
+      // our own native results list. If that backend isn't deployed yet,
+      // this falls back to opening a real browser tab so search still works.
+      BrowserView.runSearch(resolved.query, resolved.value);
+      return;
+    }
+    BrowserView.load(resolved.value, tab);
+  }
+  function goBack(){
+    const tab = active(); if(!tab || tab.histIdx<=0){ if(BrowserEngine.hasNativeBridge()) BrowserEngine.goBack(); return; }
+    tab.histIdx -= 1; tab.url = tab.history[tab.histIdx]; persist();
+    BrowserView.load(tab.url, tab, {skipHistoryPush:true});
+  }
+  function goForward(){
+    const tab = active(); if(!tab || tab.histIdx>=tab.history.length-1) return;
+    tab.histIdx += 1; tab.url = tab.history[tab.histIdx]; persist();
+    BrowserView.load(tab.url, tab, {skipHistoryPush:true});
+  }
+  function goHome(){
+    const tab = active(); if(!tab) return;
+    tab.url=''; tab.title='New Tab'; persist();
+    BrowserView.showHome();
+    renderGrid();
+  }
+  function hostnameOf(url){ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; } }
+
+  function applyActiveToUI(){
+    const tab = active();
+    document.getElementById('app').classList.toggle('private', !!(tab && tab.isPrivate));
+    if(!tab || !tab.url) BrowserView.showHome();
+    else BrowserView.load(tab.url, tab, {skipHistoryPush:true});
+  }
+
+  function renderBadge(){
+    const count = tabs.filter(t=>!t.isPrivate).length || tabs.length;
+    document.getElementById('tabCountBadge').textContent = count;
+    const top = document.getElementById('tabCountTop');
+    if(top) top.textContent = count;
+  }
+  function renderGrid(){
+    const grid = document.getElementById('tabGrid');
+    const shown = tabs.filter(t => filter==='private' ? t.isPrivate : !t.isPrivate);
+    grid.innerHTML = shown.map(t=>`
+      <div class="tab-card ${t.id===activeId?'active':''} ${t.isPrivate?'private-card':''}" data-switch-tab="${t.id}">
+        <div class="tab-card-head">
+          <svg class="fav"><use href="#${t.isPrivate?'i-incognito':'i-globe'}"/></svg>
+          <div class="ttl">${escapeHtml(t.title||'New Tab')}</div>
+          <button class="tab-close" data-close-tab="${t.id}" aria-label="Close tab"><svg><use href="#i-close"/></svg></button>
+        </div>
+        <div class="tab-card-preview">
+          <svg><use href="#${t.url?'i-globe':'i-home'}"/></svg>
+          ${t.url ? `<span class="url">${escapeHtml(t.url)}</span>` : ''}
+        </div>
+      </div>
+    `).join('') + `<div class="new-tab-card" id="tabGridNewTab"><svg><use href="#i-plus"/></svg><span>New tab</span></div>`;
+
+    grid.querySelectorAll('[data-switch-tab]').forEach(el=>{
+      el.addEventListener('click', (e)=>{ if(e.target.closest('[data-close-tab]')) return; switchTo(el.dataset.switchTab); });
+    });
+    grid.querySelectorAll('[data-close-tab]').forEach(el=>{
+      el.addEventListener('click', (e)=>{ e.stopPropagation(); closeTab(el.dataset.closeTab); });
+    });
+    const newTabCard = document.getElementById('tabGridNewTab');
+    if(newTabCard) newTabCard.addEventListener('click', ()=>{ createTab({activate:true, isPrivate: filter==='private'}); App.closePanel('tabsPanel'); });
+  }
+  function setFilter(f){ filter=f; renderGrid(); }
+
+  function bind(){
+    document.getElementById('navNewTab').addEventListener('click', ()=> createTab({activate:true}));
+    document.getElementById('btnNewTabPanel').addEventListener('click', ()=>{ createTab({activate:true, isPrivate: filter==='private'}); App.closePanel('tabsPanel'); });
+    document.getElementById('navTabs').addEventListener('click', ()=>{ renderGrid(); App.openPanel('tabsPanel'); });
+    document.getElementById('btnTabsTop').addEventListener('click', ()=>{ renderGrid(); App.openPanel('tabsPanel'); });
+    document.getElementById('btnTabsClose').addEventListener('click', ()=> App.closePanel('tabsPanel'));
+    document.querySelectorAll('[data-tab-filter]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('[data-tab-filter]').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        setFilter(btn.dataset.tabFilter);
+      });
+    });
+  }
+
+  return { restore, createTab, closeTab, switchTo, navigateActive, goBack, goForward, goHome, active, isPrivateActive, renderBadge, renderGrid, bind, applyActiveToUI };
+})();
+
+/* ---------------------------------------------------------------------
+   browser.js — BrowserView (wires content-area states to BrowserEngine)
+--------------------------------------------------------------------- */
+const BrowserView = (() => {
+  const home = document.getElementById('homeScreen');
+  const frame = document.getElementById('pageFrame');
+  const skel = document.getElementById('loadingSkel');
+  const errorState = document.getElementById('errorState');
+  const emptyState = document.getElementById('emptyState');
+  const searchResultsView = document.getElementById('searchResultsView');
+  const searchResultsQuery = document.getElementById('searchResultsQuery');
+  const searchResultsList = document.getElementById('searchResultsList');
+  const progress = document.getElementById('progressLine');
+  const addressInput = document.getElementById('addressInput');
+  const lockIcon = document.getElementById('lockIcon');
+  const addressPill = document.getElementById('addressPill');
+  const btnBack = document.getElementById('btnBack');
+  const btnForward = document.getElementById('btnForward');
+  const btnReload = document.getElementById('btnReload');
+  const floatingOpenExternal = document.getElementById('floatingOpenExternal');
+
+  function hideAll(){
+    home.classList.add('hidden');
+    frame.classList.add('hidden');
+    skel.classList.add('hidden');
+    errorState.classList.add('hidden');
+    emptyState.classList.add('hidden');
+    searchResultsView.classList.add('hidden');
+    floatingOpenExternal.classList.add('hidden');
+  }
+  function showHome(){
+    hideAll();
+    home.classList.remove('hidden');
+    addressInput.value='';
+    addressInput.placeholder='Search or enter address';
+    lockIcon.parentElement.classList.remove('insecure');
+    setNavActive('navHome');
+    updateNavButtons();
+  }
+
+  // ---- Native search results (real results, fetched by our own backend —
+  // not a framed Google/Bing/DuckDuckGo page, which always blocks framing).
+  let lastSearchQuery = '';
+  let lastSearchType = 'web';
+
+  async function runSearch(query, resultsUrl, type){
+    type = type || 'web';
+    lastSearchQuery = query;
+    lastSearchType = type;
+    hideAll();
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    addressInput.value = resultsUrl;
+    searchResultsView.classList.remove('hidden');
+    searchResultsQuery.textContent = `Searching for "${query}"…`;
+    document.querySelectorAll('.search-tab').forEach(t=>t.classList.toggle('active', t.dataset.searchType===type));
+    searchResultsList.innerHTML = `
+      <div class="loading-skel" style="position:static;">
+        <div class="skel-bar" style="width:85%;"></div>
+        <div class="skel-bar" style="width:60%;"></div>
+        <div class="skel-bar" style="width:75%;"></div>
+        <div class="skel-bar" style="width:50%;"></div>
+      </div>`;
+    try{
+      const res = await fetch('/api/search?q=' + encodeURIComponent(query) + '&type=' + encodeURIComponent(type));
+      if(!res.ok) throw new Error('search backend responded ' + res.status);
+      const data = await res.json();
+      renderSearchResults(query, type, data.results || []);
+    }catch(err){
+      if(type !== 'web'){
+        // Images/Shopping tab failed — don't bounce the whole session
+        // externally, just show an empty state and let them switch tabs.
+        searchResultsQuery.textContent = `Results for "${query}"`;
+        searchResultsList.innerHTML = emptyPanelHtml('i-search','Couldn\'t load this tab','Try the "All" tab, or search again in a moment.');
+        return;
+      }
+      // No /api/search deployed yet (or offline) — hand off to a real
+      // browser tab instead of leaving the user with nothing.
+      Toast.show('Search backend not connected — opening in your browser');
+      BrowserEngine.openExternally(resultsUrl);
+      showHome();
+    }
+  }
+  function renderSearchResults(query, type, results){
+    searchResultsQuery.textContent = `Results for "${query}"`;
+    if(!results.length){
+      searchResultsList.innerHTML = emptyPanelHtml('i-search','No results found','Try a different search term.');
+      return;
+    }
+    if(type === 'images'){
+      searchResultsList.innerHTML = `<div class="image-results-grid">${results.map(r=>`
+        <div class="image-result-card" data-open-url="${escapeAttr(r.sourceUrl)}">
+          <img src="${escapeAttr(r.imageUrl)}" alt="${escapeAttr(r.title)}" loading="lazy" onerror="this.closest('.image-result-card').remove()">
+          <div class="cap">${escapeHtml(r.title || '')}</div>
+        </div>
+      `).join('')}</div>`;
+      searchResultsList.querySelectorAll('[data-open-url]').forEach(card=>{
+        card.addEventListener('click', ()=> TabsManager.navigateActive(card.dataset.openUrl));
+      });
+      return;
+    }
+    searchResultsList.innerHTML = results.map(r=>`
+      <div class="list-row" data-open-url="${escapeAttr(r.url)}" style="align-items:flex-start;">
+        <div class="list-icon" data-favicon-domain="${escapeAttr(hostnameOf2(r.url))}"><svg><use href="#i-globe"/></svg></div>
+        <div class="list-main">
+          <div class="list-sub">${escapeHtml(formatDisplayUrl(r.url))}</div>
+          <div class="list-title">${escapeHtml(r.title)}</div>
+          ${r.snippet ? `<div style="font-size:12.5px;color:var(--text-dim);margin-top:3px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(r.snippet)}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+    searchResultsList.querySelectorAll('[data-open-url]').forEach(row=>{
+      row.addEventListener('click', ()=> TabsManager.navigateActive(row.dataset.openUrl));
+    });
+    // Swap the generic globe icon for the real site favicon (same
+    // approach as the home-screen shortcuts — fetched live, with a
+    // graceful fallback if a particular icon fails to load).
+    searchResultsList.querySelectorAll('[data-favicon-domain]').forEach(icon=>{
+      const domain = icon.dataset.faviconDomain;
+      if(!domain) return;
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.alt = '';
+      img.style.width = '18px';
+      img.style.height = '18px';
+      img.style.borderRadius = '4px';
+      img.src = 'https://www.google.com/s2/favicons?sz=64&domain=' + encodeURIComponent(domain);
+      img.addEventListener('error', ()=> img.remove(), { once:true });
+      icon.appendChild(img);
+    });
+  }
+  function hostnameOf2(url){ try{ return new URL(url).hostname; }catch(e){ return ''; } }
+  function formatDisplayUrl(url){
+    try{
+      const u = new URL(url);
+      const parts = u.pathname.split('/').filter(Boolean);
+      const host = u.hostname.replace(/^www\./,'');
+      return parts.length ? host + ' › ' + parts.join(' › ') : host;
+    }catch(e){ return url; }
+  }
+  function showLoading(url){
+    hideAll();
+    skel.classList.remove('hidden');
+    progress.style.width='0%';
+    requestAnimationFrame(()=> progress.style.width='65%');
+    addressInput.value = url;
+    updateLock(url);
+    floatingOpenExternal.classList.remove('hidden');
+  }
+  function showFrame(){
+    hideAll();
+    frame.classList.remove('hidden');
+    progress.style.width='100%';
+    setTimeout(()=> progress.style.width='0%', 260);
+    floatingOpenExternal.classList.remove('hidden');
+  }
+  function showError(url, reason){
+    hideAll();
+    errorState.classList.remove('hidden');
+    document.getElementById('errorDesc').textContent =
+      reason==='blocked'
+        ? 'This site refuses to load inside an embedded preview (its own security policy — CSP/X-Frame-Options — blocks this on purpose). Tap "Open in Browser" to load the real page.'
+        : reason==='timeout'
+        ? 'This site blocks embedded previews like this one (a common security setting many platforms use) — tap "Open in Browser" below to load the real page.'
+        : 'The address may be incorrect, or this site can\'t be reached from the preview — try "Open in Browser" below.';
+    progress.style.width='0%';
+  }
+  function updateLock(url){
+    const secure = /^https:\/\//i.test(url);
+    addressPill.classList.toggle('insecure', !secure);
+  }
+  function setNavActive(id){
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    const el = document.getElementById(id);
+    if(el) el.classList.add('active');
+  }
+  function updateNavButtons(){
+    const tab = TabsManager.active();
+    btnBack.disabled = !(tab && tab.histIdx>0);
+    btnForward.disabled = !(tab && tab.histIdx < tab.history.length-1);
+    document.getElementById('navBack').style.opacity = btnBack.disabled ? .4 : 1;
+    document.getElementById('navForward').style.opacity = btnForward.disabled ? .4 : 1;
+  }
+
+  function load(url, tab, opts={}){
+    if(!url){ showHome(); return; }
+    setNavActive('navHome'); // will be cleared below since we're not on home
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    showLoading(url);
+    BrowserEngine.openUrl(url);
+    updateNavButtons();
+  }
+
+  function bindEngineEvents(){
+    BrowserEngine.on('load', ({url})=>{ showFrame(); updateLock(url); updateNavButtons(); });
+    BrowserEngine.on('error', ({url,reason})=> showError(url, reason));
+  }
+
+  function bindTopBar(){
+    addressInput.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter'){ addressInput.blur(); TabsManager.navigateActive(addressInput.value); }
+    });
+    addressInput.addEventListener('focus', ()=> addressInput.select());
+
+    document.querySelectorAll('.search-tab').forEach(tab=>{
+      tab.addEventListener('click', ()=>{
+        if(!lastSearchQuery) return;
+        const type = tab.dataset.searchType;
+        if(type === lastSearchType) return;
+        runSearch(lastSearchQuery, SearchConfig.buildSearchUrl(lastSearchQuery), type);
+      });
+    });
+
+    btnBack.addEventListener('click', ()=> TabsManager.goBack());
+    btnForward.addEventListener('click', ()=> TabsManager.goForward());
+    btnReload.addEventListener('click', ()=>{
+      const tab = TabsManager.active();
+      if(tab && tab.url){ btnReload.querySelector('svg').classList.add('reload-spin'); BrowserEngine.reload(); setTimeout(()=>btnReload.querySelector('svg').classList.remove('reload-spin'),700); }
+    });
+    document.getElementById('btnShare').addEventListener('click', ()=>{
+      const tab = TabsManager.active();
+      ShareSheet.fallbackShare(tab && tab.url ? tab.url : location.href);
+    });
+    document.getElementById('btnErrorHome').addEventListener('click', ()=> TabsManager.goHome());
+    document.getElementById('btnErrorRetry').addEventListener('click', ()=> BrowserEngine.reload());
+    document.getElementById('btnErrorOpenExternal').addEventListener('click', ()=> BrowserEngine.openExternally());
+    floatingOpenExternal.addEventListener('click', ()=> BrowserEngine.openExternally());
+
+    document.getElementById('navBack').addEventListener('click', ()=> TabsManager.goBack());
+    document.getElementById('navForward').addEventListener('click', ()=> TabsManager.goForward());
+    document.getElementById('navHome').addEventListener('click', ()=> TabsManager.goHome());
+
+    // Home screen search
+    const homeInput = document.getElementById('homeInput');
+    homeInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') TabsManager.navigateActive(homeInput.value); });
+    document.getElementById('btnGo').addEventListener('click', ()=> TabsManager.navigateActive(homeInput.value));
+    document.getElementById('btnMic').addEventListener('click', VoiceSearch.toggle);
+  }
+
+  return { showHome, load, runSearch, updateNavButtons, bindEngineEvents, bindTopBar };
+})();
+
+/* ---------------------------------------------------------------------
+   Voice search (Web Speech API where available; graceful no-op otherwise)
+--------------------------------------------------------------------- */
+const VoiceSearch = (() => {
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('btnMic');
+  let rec = null, listening = false;
+  function toggle(){
+    if(!Recognition){ Toast.show('Voice search isn\'t supported in this browser preview'); return; }
+    if(listening){ rec && rec.stop(); return; }
+    rec = new Recognition();
+    rec.lang = 'en-US'; rec.interimResults=false; rec.maxAlternatives=1;
+    rec.onstart = ()=>{ listening=true; micBtn.classList.add('listening'); };
+    rec.onend = ()=>{ listening=false; micBtn.classList.remove('listening'); };
+    rec.onerror = ()=>{ listening=false; micBtn.classList.remove('listening'); Toast.show('Couldn\'t hear that — try again'); };
+    rec.onresult = (e)=>{
+      const text = e.results[0][0].transcript;
+      document.getElementById('homeInput').value = text;
+      TabsManager.navigateActive(text);
+    };
+    rec.start();
+  }
+  return { toggle };
+})();
+
+/* ---------------------------------------------------------------------
+   Find in page
+--------------------------------------------------------------------- */
+const FindInPage = (() => {
+  const bar = document.getElementById('findBar');
+  const input = document.getElementById('findInput');
+  const count = document.getElementById('findCount');
+  let matches = 0, current = 0;
+
+  function open(){
+    bar.classList.remove('hidden');
+    input.value=''; count.textContent='0/0';
+    input.focus();
+  }
+  function close(){ bar.classList.add('hidden'); clearHighlights(); }
+  function clearHighlights(){
+    try{
+      const doc = document.getElementById('pageFrame').contentDocument;
+      if(doc && doc.designMode !== 'on'){ /* no-op: cross-origin frames can't be touched */ }
+    }catch(e){}
+  }
+  function search(){
+    // Cross-origin iframe content cannot be searched from the parent page
+    // (same-origin policy). This mirrors a real constraint: the Android
+    // WebView build performs this via WebView.findAllAsync().
+    const q = input.value;
+    if(!q){ matches=0; current=0; count.textContent='0/0'; return; }
+    try{
+      const doc = document.getElementById('pageFrame').contentDocument;
+      const text = doc.body.innerText || '';
+      const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
+      matches = (text.match(re)||[]).length;
+      current = matches ? 1 : 0;
+    }catch(e){
+      matches = 0; current = 0;
+    }
+    count.textContent = `${current}/${matches}`;
+  }
+  function next(){ if(matches){ current = current % matches + 1; count.textContent = `${current}/${matches}`; } }
+  function prev(){ if(matches){ current = (current - 2 + matches) % matches + 1; count.textContent = `${current}/${matches}`; } }
+
+  function bind(){
+    input.addEventListener('input', search);
+    document.getElementById('btnFindNext').addEventListener('click', next);
+    document.getElementById('btnFindPrev').addEventListener('click', prev);
+    document.getElementById('btnFindClose').addEventListener('click', close);
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') next(); if(e.key==='Escape') close(); });
+  }
+  return { open, close, bind };
+})();
+
+/* ---------------------------------------------------------------------
+   Share sheet fallback (Web Share API where available)
+--------------------------------------------------------------------- */
+const ShareSheet = (() => {
+  async function fallbackShare(url){
+    if(navigator.share){
+      try{ await navigator.share({ url }); return; }catch(e){ /* user cancelled */ return; }
+    }
+    try{
+      await navigator.clipboard.writeText(url);
+      Toast.show('Link copied to clipboard');
+    }catch(e){
+      Toast.show('Sharing isn\'t available in this preview');
+    }
+  }
+  return { fallbackShare };
+})();
+
+/* ---------------------------------------------------------------------
+   Toast / Modal / Select-sheet UI primitives
+--------------------------------------------------------------------- */
+const Toast = (() => {
+  const stack = document.getElementById('toastStack');
+  function show(msg){
+    const el = document.createElement('div');
+    el.className='toast';
+    el.innerHTML = `<svg><use href="#i-check"/></svg><span></span>`;
+    el.querySelector('span').textContent = msg;
+    stack.appendChild(el);
+    requestAnimationFrame(()=> el.classList.add('show'));
+    setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),240); }, 2000);
+  }
+  return { show };
+})();
+
+const ConfirmModal = (() => {
+  const backdrop = document.getElementById('modalBackdrop');
+  const titleEl = document.getElementById('modalTitle');
+  const descEl = document.getElementById('modalDesc');
+  const confirmBtn = document.getElementById('modalConfirm');
+  const cancelBtn = document.getElementById('modalCancel');
+  let onConfirm = null;
+  function open(title, desc, cb){
+    titleEl.textContent = title; descEl.textContent = desc; onConfirm = cb;
+    backdrop.classList.add('show');
+  }
+  function close(){ backdrop.classList.remove('show'); onConfirm=null; }
+  confirmBtn.addEventListener('click', ()=>{ const cb = onConfirm; close(); if(cb) cb(); });
+  cancelBtn.addEventListener('click', close);
+  backdrop.addEventListener('click', (e)=>{ if(e.target===backdrop) close(); });
+  return { open, close };
+})();
+
+const SelectSheet = (() => {
+  const sheet = document.getElementById('selectSheet');
+  const titleEl = document.getElementById('selectSheetTitle');
+  const bodyEl = document.getElementById('selectSheetBody');
+  function open(title, options, selectedId, onPick){
+    titleEl.textContent = title;
+    bodyEl.innerHTML = options.map(o=>`
+      <div class="option-row ${o.id===selectedId?'selected':''}" data-pick="${escapeAttr(o.id)}">
+        <svg class="check"><use href="#i-check"/></svg><span>${escapeHtml(o.label)}</span>
+      </div>
+    `).join('');
+    bodyEl.querySelectorAll('[data-pick]').forEach(row=>{
+      row.addEventListener('click', ()=>{ onPick(row.dataset.pick); App.closeSheet('selectSheet'); });
+    });
+    App.showSheet('selectSheet');
+  }
+  return { open };
+})();
+
+/* ---------------------------------------------------------------------
+   Shared render helpers
+--------------------------------------------------------------------- */
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(str){ return escapeHtml(str); }
+function emptyPanelHtml(icon, title, desc){
+  return `<div class="panel-empty"><svg><use href="#${icon}"/></svg><b>${escapeHtml(title)}</b><p>${escapeHtml(desc)}</p></div>`;
+}
+
+/* ---------------------------------------------------------------------
+   app.js — App shell: shortcuts, panels/sheets orchestration, menu wiring,
+   Android bridge fallbacks, boot sequence.
+--------------------------------------------------------------------- */
+const App = (() => {
+  const SHORTCUTS = [
+    { name:'Google', url:'https://www.google.com', domain:'google.com', brand:'google', letter:'G' },
+    { name:'YouTube', url:'https://www.youtube.com', domain:'youtube.com', brand:'youtube', letter:'Y' },
+    { name:'Instagram', url:'https://www.instagram.com', domain:'instagram.com', brand:'instagram', letter:'I' },
+    { name:'WhatsApp', url:'https://web.whatsapp.com', domain:'whatsapp.com', brand:'whatsapp', letter:'W' },
+    { name:'X', url:'https://www.x.com', domain:'x.com', brand:'x', letter:'X' },
+    { name:'Netflix', url:'https://www.netflix.com', domain:'netflix.com', brand:'netflix', letter:'N' },
+    { name:'Spotify', url:'https://www.spotify.com', domain:'spotify.com', brand:'spotify', letter:'S' },
+    { name:'Wikipedia', url:'https://www.wikipedia.org', domain:'wikipedia.org', brand:'wikipedia', letter:'W' },
+  ];
+
+  function renderShortcuts(){
+    const grid = document.getElementById('shortcutGrid');
+    grid.innerHTML = SHORTCUTS.map(s=>`
+      <button class="shortcut" data-shortcut-url="${escapeAttr(s.url)}">
+        <span class="shortcut-icon" data-brand="${s.brand}" data-letter="${escapeAttr(s.letter)}">
+          <img src="https://www.google.com/s2/favicons?sz=128&domain=${encodeURIComponent(s.domain)}" alt="${escapeAttr(s.name)}" loading="lazy">
+        </span>
+        <span>${escapeHtml(s.name)}</span>
+      </button>
+    `).join('');
+    grid.querySelectorAll('[data-shortcut-url]').forEach(btn=>{
+      btn.addEventListener('click', ()=> TabsManager.navigateActive(btn.dataset.shortcutUrl));
+    });
+    // Real favicons are fetched live from each site (same as any browser's
+    // new-tab shortcuts). If one fails to load (offline, blocked, etc.),
+    // fall back to a bold lettered tile instead of a broken image icon.
+    grid.querySelectorAll('.shortcut-icon img').forEach(img=>{
+      img.addEventListener('error', ()=>{
+        const wrap = img.parentElement;
+        img.remove();
+        wrap.classList.add('brand-'+wrap.dataset.brand, 'fallback');
+        wrap.textContent = wrap.dataset.letter;
+      }, { once:true });
+    });
+  }
+
+  // ---- Sheets (AI / Menu / Select) --------------------------------------
+  function showSheet(id){
+    document.getElementById('scrim').classList.add('show');
+    document.getElementById(id).classList.add('show');
+  }
+  function closeSheet(id){
+    document.getElementById(id).classList.remove('show');
+    const anyOpen = ['menuSheet','aiSheet','selectSheet'].some(s=> s!==id && document.getElementById(s).classList.contains('show'));
+    if(!anyOpen) document.getElementById('scrim').classList.remove('show');
+  }
+  function closeAllSheets(){ ['menuSheet','aiSheet','selectSheet'].forEach(closeSheet); }
+
+  // ---- Panels (full-screen: tabs/history/bookmarks/downloads/settings) --
+  function openPanel(id){
+    document.getElementById(id).classList.add('show');
+    if(id==='historyPanel') HistoryManager.render();
+    if(id==='bookmarksPanel') BookmarksManager.render();
+    if(id==='downloadsPanel') DownloadsManager.render();
+    if(id==='settingsPanel') SettingsManager.render();
+    if(id==='tabsPanel') TabsManager.renderGrid();
+  }
+  function closePanel(id){ document.getElementById(id).classList.remove('show'); }
+
+  function bindMenu(){
+    document.getElementById('btnMenu').addEventListener('click', ()=> showSheet('menuSheet'));
+    document.getElementById('scrim').addEventListener('click', closeAllSheets);
+    document.querySelectorAll('[data-close-sheet]').forEach(btn=>{
+      btn.addEventListener('click', (e)=> closeSheet(e.target.closest('.sheet').id));
+    });
+    document.getElementById('mNewTab').addEventListener('click', ()=>{ TabsManager.createTab({activate:true}); closeAllSheets(); });
+    document.getElementById('mNewPrivateTab').addEventListener('click', ()=>{ TabsManager.createTab({activate:true, isPrivate:true}); closeAllSheets(); Toast.show('Private tab opened'); });
+    document.getElementById('mBookmarks').addEventListener('click', ()=>{ closeAllSheets(); openPanel('bookmarksPanel'); });
+    document.getElementById('mHistory').addEventListener('click', ()=>{ closeAllSheets(); openPanel('historyPanel'); });
+    document.getElementById('mDownloads').addEventListener('click', ()=>{ closeAllSheets(); openPanel('downloadsPanel'); });
+    document.getElementById('mFind').addEventListener('click', ()=>{ closeAllSheets(); FindInPage.open(); });
+    document.getElementById('mOpenExternal').addEventListener('click', ()=>{
+      closeAllSheets();
+      const tab = TabsManager.active();
+      if(!tab || !tab.url){ Toast.show('Open a page first'); return; }
+      BrowserEngine.openExternally(tab.url);
+    });
+    document.getElementById('mShare').addEventListener('click', ()=>{
+      closeAllSheets();
+      const tab = TabsManager.active();
+      ShareSheet.fallbackShare(tab && tab.url ? tab.url : location.href);
+    });
+    document.getElementById('mAddBookmark').addEventListener('click', ()=>{
+      closeAllSheets();
+      const tab = TabsManager.active();
+      if(!tab || !tab.url){ Toast.show('Open a page first'); return; }
+      BookmarksManager.add(tab.url, tab.title);
+    });
+    document.getElementById('mSettings').addEventListener('click', ()=>{ closeAllSheets(); openPanel('settingsPanel'); });
+
+    document.getElementById('btnTabsClose').addEventListener('click', ()=> closePanel('tabsPanel'));
+    document.getElementById('btnHistoryBack').addEventListener('click', ()=> closePanel('historyPanel'));
+    document.getElementById('btnHistoryClear').addEventListener('click', ()=>{
+      ConfirmModal.open('Clear all history?','This can\'t be undone.', ()=> HistoryManager.clearAll());
+    });
+    document.getElementById('btnBookmarksBack').addEventListener('click', ()=> closePanel('bookmarksPanel'));
+    document.getElementById('btnDownloadsBack').addEventListener('click', ()=> closePanel('downloadsPanel'));
+    document.getElementById('btnDownloadDemo').addEventListener('click', ()=>{
+      const tab = TabsManager.active();
+      DownloadsManager.simulate((tab&&tab.url) || 'https://example.com/sample-file.pdf');
+      Toast.show('Download started');
+    });
+    document.getElementById('btnSettingsBack').addEventListener('click', ()=> closePanel('settingsPanel'));
+  }
+
+  function boot(){
+    // Theme
+    const settings = SettingsManager.get();
+    ThemeManager.apply(settings.theme);
+
+    renderShortcuts();
+    HistoryManager.renderHome();
+    TabsManager.restore();
+    TabsManager.bind();
+    BrowserView.bindEngineEvents();
+    BrowserView.bindTopBar();
+    NexaAI.bind();
+    SettingsManager.bind();
+    FindInPage.bind();
+    bindMenu();
+
+    // Keep AndroidBrowser call surface documented even without a bridge —
+    // calling any of these on the web is a safe no-op via BrowserEngine's
+    // fallback layer, so the UI never breaks when unwrapped.
+    window.AndroidBrowser = window.AndroidBrowser || null;
+
+    TabsManager.applyActiveToUI();
+  }
+
+  return { showSheet, closeSheet, openPanel, closePanel, boot };
+})();
+
+document.addEventListener('DOMContentLoaded', App.boot);
+</script>
+</body>
+</html>
