@@ -38,6 +38,8 @@ export default async function handler(req, res) {
   } else if (type === 'shopping') {
     body.sources = ['web'];
     body.includeDomains = SHOPPING_DOMAINS;
+  } else if (type === 'news') {
+    body.sources = ['news'];
   } else {
     body.sources = ['web'];
   }
@@ -71,6 +73,12 @@ export default async function handler(req, res) {
         width: item.imageWidth,
         height: item.imageHeight
       })).filter(r => r.imageUrl);
+    } else if (type === 'news') {
+      results = ((data.data && data.data.news) || []).map(item => ({
+        title: item.title || item.url,
+        url: item.url,
+        snippet: cleanSnippet(item.snippet || item.description)
+      }));
     } else {
       results = ((data.data && data.data.web) || []).map(item => ({
         title: item.title || item.url,
